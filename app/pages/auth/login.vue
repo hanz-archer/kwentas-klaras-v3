@@ -305,7 +305,7 @@ const handleLogin = async () => {
     })
 
     if (response.success) {
-      await navigateTo('/')
+      await navigateTo('/admin')
     }
   } catch (err: any) {
     error.value = err?.message || 'Invalid email or password. Please try again.'

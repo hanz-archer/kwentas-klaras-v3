@@ -1,11 +1,10 @@
-import { MongoClient, Db } from 'mongodb'
+import mongoose from 'mongoose'
 
-let client: MongoClient | null = null
-let db: Db | null = null
+let isConnected = false
 
-export async function connectToMongoDB(): Promise<Db> {
-  if (db) {
-    return db
+export async function connectToMongoDB(): Promise<void> {
+  if (isConnected) {
+    return
   }
 
   const uri = process.env.MONGODB_URI
@@ -13,24 +12,27 @@ export async function connectToMongoDB(): Promise<Db> {
     throw new Error('MONGODB_URI environment variable is not set')
   }
 
-  client = new MongoClient(uri)
-  await client.connect()
-  
-  const databaseName = new URL(uri).pathname.slice(1) || 'test'
-  db = client.db(databaseName)
-
-  return db
-}
-
-export async function getMongoDB(): Promise<Db> {
-  return connectToMongoDB()
-}
-
-export async function closeMongoDB(): Promise<void> {
-  if (client) {
-    await client.close()
-    client = null
-    db = null
+  try {
+    await mongoose.connect(uri)
+    isConnected = true
+    console.log('Connected to MongoDB')
+  } catch (error) {
+    console.error('MongoDB connection error:', error)
+    throw error
   }
 }
 
+export async function getMongoDB(): Promise<typeof mongoose> {
+  if (!isConnected) {
+    await connectToMongoDB()
+  }
+  return mongoose
+}
+
+export async function closeMongoDB(): Promise<void> {
+  if (isConnected) {
+    await mongoose.connection.close()
+    isConnected = false
+    console.log('MongoDB connection closed')
+  }
+}
