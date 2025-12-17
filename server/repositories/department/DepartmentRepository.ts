@@ -10,9 +10,8 @@ export class DepartmentRepository implements IDepartmentRepository {
   }
 
   async findAll(): Promise<Department[]> {
-    return this.client.department.findMany({
-      orderBy: { name: 'asc' },
-    });
+    const departments = await this.client.department.findMany();
+    return departments.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async findById(id: string): Promise<Department | null> {

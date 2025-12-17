@@ -10,7 +10,10 @@ export const useProjectFormatting = () => {
     if (!date) return 'N/A'
     const dateObj = typeof date === 'string' ? new Date(date) : date
     if (isNaN(dateObj.getTime())) return 'Invalid Date'
-    return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0')
+    const day = String(dateObj.getDate()).padStart(2, '0')
+    const year = dateObj.getFullYear()
+    return `${month}/${day}/${year}`
   }
 
   return {

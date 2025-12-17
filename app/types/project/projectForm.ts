@@ -3,7 +3,7 @@ export interface ProjectForm {
   implementingUnit: string
   location: string
   appropriation: number
-  year: number
+  year: string
   startDate: string
   endDate: string
   services: string

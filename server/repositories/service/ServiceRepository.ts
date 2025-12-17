@@ -10,9 +10,8 @@ export class ServiceRepository implements IServiceRepository {
   }
 
   async findAll(): Promise<Service[]> {
-    return this.client.service.findMany({
-      orderBy: { name: 'asc' },
-    });
+    const services = await this.client.service.findMany();
+    return services.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async findById(id: string): Promise<Service | null> {

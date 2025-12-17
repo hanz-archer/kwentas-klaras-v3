@@ -66,7 +66,7 @@ const handleButtonClick = async (event: MouseEvent) => {
   event.preventDefault()
   event.stopPropagation()
   if (props.buttonAction) {
-    await props.buttonAction()
+      await props.buttonAction()
   }
 }
 </script>

@@ -6,26 +6,26 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<IProject>(event)
 
             if (!body.name || !body.appropriation || !body.year || !body.services || !body.startDate || !body.endDate) {
-              throw createError({
-                statusCode: 400,
+    throw createError({
+      statusCode: 400,
                 message: 'Missing required fields: name, appropriation, year, services, startDate, endDate'
-              })
-            }
+    })
+  }
 
-            return await withErrorHandler(async () => {
+  return await withErrorHandler(async () => {
               const projectService = new ProjectService()
               const project = await projectService.create({
-                name: body.name,
-                implementingUnit: body.implementingUnit,
+      name: body.name,
+      implementingUnit: body.implementingUnit,
                 location: body.location,
-                appropriation: body.appropriation,
-                year: body.year,
-                services: body.services,
+      appropriation: body.appropriation,
+      year: body.year,
+      services: body.services,
                 remarks: body.remarks,
                 code: body.code,
                 startDate: body.startDate,
                 endDate: body.endDate,
-              })
+    })
 
     return {
       success: true,

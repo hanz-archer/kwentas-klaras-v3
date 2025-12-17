@@ -55,8 +55,11 @@ export class UserRepository implements IUserRepository {
   }
 
   async findAllIncludingNullFirebaseId(): Promise<User[]> {
-    return this.client.user.findMany({
-      orderBy: { createdAt: 'desc' },
+    const users = await this.client.user.findMany();
+    return users.sort((a, b) => {
+      const aTime = a.createdAt?.getTime() ?? 0;
+      const bTime = b.createdAt?.getTime() ?? 0;
+      return bTime - aTime;
     });
   }
 }

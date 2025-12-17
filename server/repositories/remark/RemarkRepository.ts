@@ -10,9 +10,8 @@ export class RemarkRepository implements IRemarkRepository {
   }
 
   async findAll(): Promise<Remark[]> {
-    return this.client.remark.findMany({
-      orderBy: { name: 'asc' },
-    });
+    const remarks = await this.client.remark.findMany();
+    return remarks.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async findById(id: string): Promise<Remark | null> {

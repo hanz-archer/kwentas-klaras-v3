@@ -20,17 +20,17 @@
                   </span>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                @click="navigateTo('/admin/projects')"
+            <Button
+              variant="ghost"
+              size="sm"
+              @click="navigateTo('/admin/projects')"
                 class="text-brand-blue hover:text-brand-green"
-              >
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
                 <span>Back to Projects</span>
-              </Button>
+            </Button>
             </div>
           </div>
 
@@ -42,10 +42,10 @@
                 </h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
+              <div>
                     <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
                       PPA (Programs, Projects, Activities) <span class="text-red-500">*</span>
-                    </label>
+                </label>
                     <input
                       id="name"
                       v-model="form.name"
@@ -56,55 +56,34 @@
                     />
                   </div>
 
-                  <div>
-                    <label for="implementingUnit" class="block text-sm font-medium text-gray-700 mb-2">
-                      Implementing Unit <span class="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="implementingUnit"
-                      v-model="form.implementingUnit"
-                      required
-                      class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
-                    >
-                      <option value="">Select implementing unit</option>
-                      <option v-for="dept in departments" :key="dept.id" :value="dept.name">
-                        {{ dept.name }}
-                      </option>
-                    </select>
-                  </div>
+                  <SelectInput
+                  id="implementingUnit"
+                  v-model="form.implementingUnit"
+                    :options="departments"
+                    placeholder="Select implementing unit"
+                    label="Implementing Unit"
+                    required
+                  />
 
-                  <div>
-                    <label for="location" class="block text-sm font-medium text-gray-700 mb-2">
-                      Location <span class="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="location"
-                      v-model="form.location"
-                      required
-                      class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
-                    >
-                      <option value="">Select location</option>
-                      <option v-for="location in locations" :key="location.id" :value="location.name">
-                        {{ location.name }}
-                      </option>
-                    </select>
-                  </div>
+                  <SelectInput
+                    id="location"
+                    v-model="form.location"
+                    :options="locations"
+                    placeholder="Select location"
+                    label="Location"
+                    required
+                  />
 
-                  <div>
-                    <label for="appropriation" class="block text-sm font-medium text-gray-700 mb-2">
-                      Appropriation <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="appropriation"
-                      v-model.number="form.appropriation"
-                      type="number"
-                      required
-                      min="0"
-                      step="0.01"
-                      class="block w-full px-3 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
-                      placeholder="Enter appropriation amount"
-                    />
-                  </div>
+                  <CurrencyInput
+                    id="appropriation"
+                    v-model="form.appropriation"
+                    label="Appropriation"
+                    placeholder="Enter appropriation amount"
+                  required
+                    currency="PHP"
+                    :precision="2"
+                    :min="0"
+                  />
                 </div>
               </div>
 
@@ -114,30 +93,30 @@
                 </h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
+              <div>
                     <label for="startDate" class="block text-sm font-medium text-gray-700 mb-2">
                       Start Date <span class="text-red-500">*</span>
-                    </label>
-                    <input
+                </label>
+                <input
                       id="startDate"
                       v-model="form.startDate"
                       type="date"
-                      required
+                  required
                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
-                    />
-                  </div>
+                />
+              </div>
 
-                  <div>
+              <div>
                     <label for="endDate" class="block text-sm font-medium text-gray-700 mb-2">
                       End Date <span class="text-red-500">*</span>
-                    </label>
-                    <input
+                </label>
+                <input
                       id="endDate"
                       v-model="form.endDate"
                       type="date"
-                      required
+                  required
                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
-                    />
+                />
                   </div>
                 </div>
               </div>
@@ -148,27 +127,19 @@
                 </h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label for="remarks" class="block text-sm font-medium text-gray-700 mb-2">
-                      Remarks <span class="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="remarks"
-                      v-model="form.remarks"
-                      required
-                      class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
-                    >
-                      <option value="">Select remarks</option>
-                      <option v-for="remark in remarks" :key="remark.id" :value="remark.name">
-                        {{ remark.name }}
-                      </option>
-                    </select>
-                  </div>
+                  <SelectInput
+                    id="remarks"
+                    v-model="form.remarks"
+                    :options="remarks"
+                    placeholder="Select remarks"
+                    label="Remarks"
+                    required
+                  />
 
-                  <div>
+              <div>
                     <label for="code" class="block text-sm font-medium text-gray-700 mb-2">
                       Code <span class="text-red-500">*</span>
-                    </label>
+                </label>
                     <input
                       id="code"
                       v-model="form.code"
@@ -179,38 +150,24 @@
                     />
                   </div>
 
-                  <div>
-                    <label for="services" class="block text-sm font-medium text-gray-700 mb-2">
-                      Services <span class="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="services"
-                      v-model="form.services"
-                      required
-                      class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
-                    >
-                      <option value="">Select a service</option>
-                      <option v-for="service in services" :key="service.id" :value="service.name">
-                        {{ service.name }}
-                      </option>
-                    </select>
-                  </div>
+                  <SelectInput
+                  id="services"
+                  v-model="form.services"
+                    :options="services"
+                    placeholder="Select a service"
+                    label="Services"
+                    required
+                  />
 
-                  <div>
-                    <label for="year" class="block text-sm font-medium text-gray-700 mb-2">
-                      Year <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="year"
-                      v-model.number="form.year"
-                      type="number"
-                      required
-                      min="2000"
-                      max="2100"
-                      class="block w-full px-3 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
-                      placeholder="Enter year"
-                    />
-                  </div>
+                  <YearPicker
+                    id="year"
+                    v-model="form.year"
+                    label="Year"
+                    placeholder="Select year"
+                    required
+                    :min-year="1900"
+                    :max-year="2100"
+                  />
                 </div>
               </div>
 
@@ -230,11 +187,12 @@
                 <Button
                   variant="primary"
                   size="md"
-                  type="submit"
+                  type="button"
+                  @click="handleCreateClick"
                   :loading="loading"
-                  :disabled="loading"
+                  :disabled="loading || !isFormValid"
                 >
-                  <template #loading>Creating...</template>
+                  <template #loading>{{ MODAL_MESSAGES.CREATE_PROJECT.loadingText }}</template>
                   Create Project
                 </Button>
               </div>
@@ -243,12 +201,34 @@
         </div>
       </div>
     </main>
+
+    <ConfirmModal
+      :is-open="showConfirmationModal"
+      :title="MODAL_MESSAGES.CREATE_PROJECT.title"
+      :message="MODAL_MESSAGES.CREATE_PROJECT.message"
+      :confirm-text="MODAL_MESSAGES.CREATE_PROJECT.confirmText"
+      :cancel-text="MODAL_MESSAGES.CREATE_PROJECT.cancelText"
+      :loading="loading"
+      :loading-text="MODAL_MESSAGES.CREATE_PROJECT.loadingText"
+      :project-details="{
+        name: form.name,
+        appropriation: form.appropriation
+      }"
+      @confirm="onConfirmCreate"
+      @cancel="closeModal"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import Button from '~/components/ui/Button.vue'
 import ErrorMessage from '~/components/ui/ErrorMessage.vue'
+import SelectInput from '~/components/ui/SelectInput.vue'
+import CurrencyInput from '~/components/ui/CurrencyInput.vue'
+import YearPicker from '~/components/ui/YearPicker.vue'
+import ConfirmModal from '~/components/ui/ConfirmModal.vue'
+import { MODAL_MESSAGES } from '~/constants/ui/modalMessages'
+import { useConfirmModal } from '~/composables/ui/useConfirmModal'
 import { useProjectForm } from '~/composables/project/useProjectForm'
 import { useServices } from '~/composables/service/useServices'
 import { useDepartments } from '~/composables/department/useDepartments'
@@ -260,6 +240,24 @@ const { services, fetchServices } = useServices()
 const { departments, fetchDepartments } = useDepartments()
 const { locations, fetchLocations } = useLocations()
 const { remarks, fetchRemarks } = useRemarks()
+
+const { isOpen: showConfirmationModal, close: closeModal } = useConfirmModal()
+
+const isFormValid = computed(() => {
+  const isValid = remainingRequiredFields.value === 0
+  return isValid
+})
+
+const handleCreateClick = () => {
+  if (isFormValid.value) {
+    showConfirmationModal.value = true
+  }
+}
+
+const onConfirmCreate = async () => {
+  closeModal()
+  await handleSubmit()
+}
 
 onMounted(async () => {
   await Promise.all([fetchServices(), fetchDepartments(), fetchLocations(), fetchRemarks()])

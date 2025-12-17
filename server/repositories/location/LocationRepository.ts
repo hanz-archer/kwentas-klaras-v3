@@ -10,9 +10,8 @@ export class LocationRepository implements ILocationRepository {
   }
 
   async findAll(): Promise<Location[]> {
-    return this.client.location.findMany({
-      orderBy: { name: 'asc' },
-    });
+    const locations = await this.client.location.findMany();
+    return locations.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async findById(id: string): Promise<Location | null> {
