@@ -44,7 +44,7 @@
                 </button>
                 <button
                   v-if="canManageProjects"
-                  @click="handleEdit"
+                  @click="handleEditClick"
                   class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Edit Project
@@ -605,6 +605,10 @@ const router = useRouter()
 const projectId = route.params.id as string
 const { canManageProjects } = useUserPermissions()
 
+const handleEditClick = () => {
+  router.push(`/admin/projects/edit/${projectId}`)
+}
+
 const {
   project,
   loading,
@@ -626,12 +630,6 @@ const {
   timelineMilestones,
   daysRemaining,
 } = useProjectDetail(projectId)
-
-const handleEdit = () => {
-  if (project.value?.id) {
-    router.push(`/admin/projects/${project.value.id}/edit`)
-  }
-}
 
 onMounted(async () => {
   await loadProject()

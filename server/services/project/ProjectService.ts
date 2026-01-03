@@ -1,6 +1,7 @@
 import { ProjectRepository } from '../../repositories/project/ProjectRepository';
 import { ProjectSerializer } from '../../serializers/ProjectSerializer';
 import { ProjectActivityService } from './ProjectActivityService';
+import { PROJECT_FIELD_NAMES } from '../../constants/project/fieldNames';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 export class ProjectService {
@@ -119,22 +120,24 @@ export class ProjectService {
     
     if (project && project.id) {
       const changes: string[] = []
-      if (data.name !== undefined) changes.push('name')
-      if (data.implementingUnit !== undefined) changes.push('implementing unit')
-      if (data.location !== undefined) changes.push('location')
-      if (data.appropriation !== undefined) changes.push('appropriation')
-      if (data.year !== undefined) changes.push('year')
-      if (data.services !== undefined) changes.push('services')
-      if (data.remarks !== undefined) changes.push('remarks')
-      if (data.code !== undefined) changes.push('code')
-      if (data.startDate !== undefined) changes.push('start date')
-      if (data.endDate !== undefined) changes.push('end date')
+      if (data.name !== undefined) changes.push(PROJECT_FIELD_NAMES.name)
+      if (data.implementingUnit !== undefined) changes.push(PROJECT_FIELD_NAMES.implementingUnit)
+      if (data.location !== undefined) changes.push(PROJECT_FIELD_NAMES.location)
+      if (data.appropriation !== undefined) changes.push(PROJECT_FIELD_NAMES.appropriation)
+      if (data.year !== undefined) changes.push(PROJECT_FIELD_NAMES.year)
+      if (data.services !== undefined) changes.push(PROJECT_FIELD_NAMES.services)
+      if (data.remarks !== undefined) changes.push(PROJECT_FIELD_NAMES.remarks)
+      if (data.code !== undefined) changes.push(PROJECT_FIELD_NAMES.code)
+      if (data.startDate !== undefined) changes.push(PROJECT_FIELD_NAMES.startDate)
+      if (data.endDate !== undefined) changes.push(PROJECT_FIELD_NAMES.endDate)
       
-      await this.activityService.create({
-        projectId: project.id,
-        action: 'updated',
-        description: `Project "${project.name}" was updated. Changed: ${changes.join(', ')}`,
-      });
+      if (changes.length > 0) {
+        await this.activityService.create({
+          projectId: project.id,
+          action: 'updated',
+          description: `Project "${project.name}" was updated. Changed fields: ${changes.join(', ')}`,
+        });
+      }
     }
 
     return serializedProject;
