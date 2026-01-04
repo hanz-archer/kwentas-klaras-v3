@@ -127,5 +127,55 @@ export class ComputationService {
     
     return disbursementsMap;
   }
+
+  /**
+   * Calculate the remaining balance for a project
+   * Remaining balance = appropriation + total added budget - total disbursements
+   * @param projectId - The project ID
+   * @param appropriation - The project appropriation amount
+   * @returns The remaining balance
+   */
+  async calculateRemainingBalance(projectId: string, appropriation: number): Promise<number> {
+    const totalAddedBudget = await this.calculateTotalAddedBudget(projectId);
+    const totalDisbursements = await this.calculateTotalDisbursements(projectId);
+    return appropriation + totalAddedBudget - totalDisbursements;
+  }
+
+  /**
+   * Calculate the remaining obligations for a project
+   * Remaining obligations = total obligations - total approved disbursements
+   * @param projectId - The project ID
+   * @returns The remaining obligations amount
+   */
+  async calculateRemainingObligations(projectId: string): Promise<number> {
+    const totalObligations = await this.calculateTotalObligations(projectId);
+    const disbursements = await this.disbursementRepo.findByProjectId(projectId);
+    const approvedDisbursements = disbursements.filter(d => d.status === 'approved');
+    const totalApprovedDisbursements = approvedDisbursements.reduce((sum, d) => sum + d.amount, 0);
+    return Math.max(0, totalObligations - totalApprovedDisbursements);
+  }
+
+  /**
+   * Calculate the utilization rate for a project
+   * Utilization rate = (approved disbursements / total budget) * 100
+   * @param projectId - The project ID
+   * @param appropriation - The project appropriation amount
+   * @returns The utilization rate as a percentage (0-100)
+   */
+  async calculateUtilizationRate(projectId: string, appropriation: number): Promise<number> {
+    const totalAddedBudget = await this.calculateTotalAddedBudget(projectId);
+    const totalBudget = appropriation + totalAddedBudget;
+    
+    if (totalBudget === 0) {
+      return 0;
+    }
+
+    const disbursements = await this.disbursementRepo.findByProjectId(projectId);
+    const approvedDisbursements = disbursements
+      .filter(d => d.status === 'approved')
+      .reduce((sum, d) => sum + d.amount, 0);
+
+    return (approvedDisbursements / totalBudget) * 100;
+  }
 }
 

@@ -1,15 +1,21 @@
 import { ObligationRepository } from '../../repositories/obligation/ObligationRepository';
 import { ObligationSerializer } from '../../serializers/ObligationSerializer';
+import { ProjectRepository } from '../../repositories/project/ProjectRepository';
+import { ComputationService } from '../computation/ComputationService';
 import type { PrismaClient } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
 
 export class ObligationService {
   private repo: ObligationRepository;
+  private projectRepo: ProjectRepository;
+  private computationService: ComputationService;
   private client: PrismaClient;
 
   constructor(prismaClient?: PrismaClient) {
     this.client = prismaClient || prisma;
     this.repo = new ObligationRepository(prismaClient);
+    this.projectRepo = new ProjectRepository(prismaClient);
+    this.computationService = new ComputationService(prismaClient);
   }
 
   async list() {
@@ -42,6 +48,26 @@ export class ObligationService {
 
     if (!data.payee || data.payee.trim() === '') {
       throw new Error('Payee is required');
+    }
+
+    // Check if adding this obligation would exceed the remaining balance
+    const project = await this.projectRepo.findById(data.projectId);
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    const remainingBalance = await this.computationService.calculateRemainingBalance(
+      data.projectId,
+      project.appropriation
+    );
+
+    const currentTotalObligations = await this.computationService.calculateTotalObligations(data.projectId);
+    const newTotalObligations = currentTotalObligations + data.amount;
+
+    if (newTotalObligations > remainingBalance) {
+      throw new Error(
+        `Cannot add obligation. Total obligations (₱${newTotalObligations.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}) would exceed remaining balance (₱${remainingBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}).`
+      );
     }
 
     const obligation = await this.repo.create({

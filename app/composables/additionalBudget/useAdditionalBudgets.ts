@@ -29,6 +29,8 @@ export const useAdditionalBudgets = () => {
     try {
       const response = await $fetch<{ success: boolean; budgets: IAdditionalBudget[] }>(`/api/additional-budgets/project/${projectId}`)
       if (response.success) {
+        // Update local state if fetching for a specific project
+        budgets.value = response.budgets
         return response.budgets
       }
       return []

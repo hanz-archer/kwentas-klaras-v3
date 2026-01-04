@@ -38,5 +38,12 @@ export class DisbursementRepository implements IDisbursementRepository {
       return b.createdAt.getTime() - a.createdAt.getTime();
     });
   }
+
+  async update(id: string, data: Prisma.DisbursementUpdateInput): Promise<Disbursement> {
+    return this.client.disbursement.update({
+      where: { id },
+      data,
+    });
+  }
 }
 

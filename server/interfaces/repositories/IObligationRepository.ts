@@ -5,5 +5,6 @@ export interface IObligationRepository {
   findAll(): Promise<Obligation[]>;
   findById(id: string): Promise<Obligation | null>;
   findByProjectId(projectId: string): Promise<Obligation[]>;
+  update(id: string, data: Prisma.ObligationUpdateInput): Promise<Obligation>;
 }
 

@@ -207,7 +207,7 @@
                   </div>
                 </div>
                 <div class="p-6">
-                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-gray-50 rounded-lg p-4">
                       <p class="text-xs font-medium text-gray-500 mb-1">Total Budget</p>
                       <p class="text-lg font-bold text-gray-900">₱{{ formatNumber(project.appropriation) }}</p>
@@ -218,25 +218,37 @@
                     </div>
                     <div class="bg-gray-50 rounded-lg p-4">
                       <p class="text-xs font-medium text-gray-500 mb-1">Remaining Balance</p>
-                      <p class="text-lg font-bold text-gray-900">₱{{ formatNumber(project.appropriation) }}</p>
+                      <p class="text-lg font-bold" :class="remainingBalance >= 0 ? 'text-green-600' : 'text-red-600'">
+                        ₱{{ formatNumber(remainingBalance) }}
+                      </p>
                     </div>
                     <div class="bg-gray-50 rounded-lg p-4">
-                      <p class="text-xs font-medium text-gray-500 mb-1">Fund Balance</p>
-                      <p class="text-lg font-bold text-gray-900">₱0.00</p>
+                      <p class="text-xs font-medium text-gray-500 mb-1">Total Obligations</p>
+                      <p class="text-lg font-bold text-gray-900">₱{{ formatNumber(totalObligations) }}</p>
                     </div>
                     <div class="bg-gray-50 rounded-lg p-4">
-                      <p class="text-xs font-medium text-gray-500 mb-1">Balance Allotment</p>
-                      <p class="text-lg font-bold text-gray-900">₱0.00</p>
+                      <p class="text-xs font-medium text-gray-500 mb-1">Remaining Obligations</p>
+                      <p class="text-lg font-bold text-orange-600">₱{{ formatNumber(remainingObligations) }}</p>
                     </div>
                     <div class="bg-gray-50 rounded-lg p-4">
-                      <p class="text-xs font-medium text-gray-500 mb-1">Total Disbursed</p>
-                      <p class="text-lg font-bold text-gray-900">₱0.00</p>
+                      <p class="text-xs font-medium text-gray-500 mb-1">Total Disbursements</p>
+                      <p class="text-lg font-bold text-gray-900">₱{{ formatNumber(totalDisbursements) }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                      <p class="text-xs font-medium text-gray-500 mb-1">Approved Disbursements</p>
+                      <p class="text-lg font-bold text-green-600">₱{{ formatNumber(approvedDisbursements) }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                      <p class="text-xs font-medium text-gray-500 mb-1">Pending Disbursements</p>
+                      <p class="text-lg font-bold text-yellow-600">₱{{ formatNumber(pendingDisbursements) }}</p>
                     </div>
                   </div>
                   <div class="mt-6 pt-6 border-t border-gray-100">
                     <div class="flex items-center justify-between">
                       <p class="text-sm font-medium text-gray-700">Utilization Rate:</p>
-                      <p class="text-2xl font-bold text-green-600">0.00%</p>
+                      <p class="text-2xl font-bold" :class="utilizationRate >= 100 ? 'text-red-600' : utilizationRate >= 80 ? 'text-yellow-600' : 'text-green-600'">
+                        {{ formatUtilizationRate(utilizationRate) }}%
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -253,13 +265,13 @@
                   </div>
                 </div>
                 
-                <div v-if="budgetsLoading" class="text-center py-12">
+                <div v-if="financialsLoading" class="text-center py-12">
                   <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
                   <p class="mt-3 text-sm text-gray-500">Loading budgets...</p>
                 </div>
 
-                <div v-else-if="budgetsError" class="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p class="text-sm text-red-800">{{ budgetsError }}</p>
+                <div v-else-if="financialsError" class="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p class="text-sm text-red-800">{{ financialsError }}</p>
                 </div>
 
                 <div v-else-if="additionalBudgets.length === 0" class="text-center py-12">
@@ -326,13 +338,13 @@
                   </div>
                 </div>
                 
-                <div v-if="obligationsLoading" class="text-center py-12">
+                <div v-if="financialsLoading" class="text-center py-12">
                   <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
                   <p class="mt-3 text-sm text-gray-500">Loading obligations...</p>
                 </div>
 
-                <div v-else-if="obligationsError" class="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p class="text-sm text-red-800">{{ obligationsError }}</p>
+                <div v-else-if="financialsError" class="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p class="text-sm text-red-800">{{ financialsError }}</p>
                 </div>
 
                 <div v-else-if="obligations.length === 0" class="text-center py-12">
@@ -415,13 +427,13 @@
                   </div>
                 </div>
                 
-                <div v-if="disbursementsLoading" class="text-center py-12">
+                <div v-if="financialsLoading" class="text-center py-12">
                   <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
                   <p class="mt-3 text-sm text-gray-500">Loading disbursements...</p>
                 </div>
 
-                <div v-else-if="disbursementsError" class="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p class="text-sm text-red-800">{{ disbursementsError }}</p>
+                <div v-else-if="financialsError" class="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p class="text-sm text-red-800">{{ financialsError }}</p>
                 </div>
 
                 <div v-else-if="disbursements.length === 0" class="text-center py-12">
@@ -509,37 +521,37 @@
                         </div>
                         <div class="relative flex items-center py-2">
                           <div v-if="index > 0 && !milestone.isNewDay" 
-                               class="absolute left-4 w-0.5 bg-gradient-to-b from-blue-200 to-blue-300"
-                               :style="`height: 40px; top: -20px; z-index: 1;`"></div>
+                             class="absolute left-4 w-0.5 bg-gradient-to-b from-blue-200 to-blue-300"
+                             :style="`height: 40px; top: -20px; z-index: 1;`"></div>
                           <div v-else-if="index > 0 && milestone.isNewDay"
                                class="absolute left-4 w-0.5 bg-gradient-to-b from-blue-200 to-blue-300"
                                :style="`height: 20px; top: -10px; z-index: 1;`"></div>
-                          
-                          <div class="absolute left-4 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-white shadow-lg transition-all duration-300 z-10"
-                            :class="milestone.isCurrent ? 'bg-blue-500 shadow-blue-200' : milestone.isPast ? 'bg-emerald-500 shadow-emerald-200' : 'bg-gray-200'">
-                          </div>
-                          
-                          <div class="ml-8 flex-1">
-                            <div class="bg-white backdrop-blur-sm rounded-full px-4 py-2.5 border w-full border-gray-100/50 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-200 group">
-                              <div class="flex items-center justify-between gap-3">
-                                <div class="flex-1">
-                                  <h3 class="text-base font-semibold text-gray-900 group-hover:text-gray-900 transition-colors">{{ milestone.label }}</h3>
+                        
+                        <div class="absolute left-4 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-white shadow-lg transition-all duration-300 z-10"
+                          :class="milestone.isCurrent ? 'bg-blue-500 shadow-blue-200' : milestone.isPast ? 'bg-emerald-500 shadow-emerald-200' : 'bg-gray-200'">
+                        </div>
+                        
+                        <div class="ml-8 flex-1">
+                          <div class="bg-white backdrop-blur-sm rounded-full px-4 py-2.5 border w-full border-gray-100/50 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-200 group">
+                            <div class="flex items-center justify-between gap-3">
+                              <div class="flex-1">
+                                <h3 class="text-base font-semibold text-gray-900 group-hover:text-gray-900 transition-colors">{{ milestone.label }}</h3>
                                   <p v-if="milestone.isActivity && milestone.description" class="text-xs text-gray-600 mt-0.5" v-html="milestone.description"></p>
-                                </div>
-                                <span :class="[
-                                  'text-sm font-medium px-3 py-1.5 rounded-full transition-all duration-200 ml-2 w-fit',
-                                  milestone.isCurrent 
-                                    ? 'bg-blue-500 text-white border border-blue-100 group-hover:bg-blue-100' 
-                                    : milestone.isPast 
-                                      ? 'bg-emerald-500 text-white border border-emerald-100 group-hover:bg-emerald-100'
-                                      : 'bg-gray-200 text-gray-700 border border-gray-100 group-hover:bg-gray-100'
-                                ]">
-                                  {{ formatDate(milestone.date) }}
-                                </span>
                               </div>
+                              <span :class="[
+                                'text-sm font-medium px-3 py-1.5 rounded-full transition-all duration-200 ml-2 w-fit',
+                                milestone.isCurrent 
+                                  ? 'bg-blue-500 text-white border border-blue-100 group-hover:bg-blue-100' 
+                                  : milestone.isPast 
+                                    ? 'bg-emerald-500 text-white border border-emerald-100 group-hover:bg-emerald-100'
+                                    : 'bg-gray-200 text-gray-700 border border-gray-100 group-hover:bg-gray-100'
+                              ]">
+                                {{ formatDate(milestone.date) }}
+                              </span>
                             </div>
                           </div>
                         </div>
+                      </div>
                       </template>
                     </div>
                   </div>
@@ -683,16 +695,16 @@
               <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-gray-50">
                   <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 class="text-xl font-bold text-gray-900">Activity Log</h3>
-                        <p class="text-xs text-gray-500">Project updates and changes</p>
-                      </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 flex items-center justify-center">
+                      <svg class="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 class="text-xl font-bold text-gray-900">Activity Log</h3>
+                      <p class="text-xs text-gray-500">Project updates and changes</p>
+                    </div>
                     </div>
                     <button
                       v-if="auditLogs.length > 0"
@@ -768,13 +780,13 @@
                   </div>
                 </div>
                 <div class="p-6">
-                  <div class="text-center py-12">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                      <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                    <p class="text-sm text-gray-500">No documents available</p>
+                <div class="text-center py-12">
+                  <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <p class="text-sm text-gray-500">No documents available</p>
                   </div>
                 </div>
               </div>
@@ -798,6 +810,7 @@ import PieChart from '~/components/ui/PieChart.vue'
 import Accordion from '~/components/ui/Accordion.vue'
 import AddDisbursement from '~/components/projects/AddDisbursement.vue'
 import { useProjectDetail } from '~/composables/project/useProjectDetail'
+import { useProjectFinancials } from '~/composables/project/useProjectFinancials'
 import { useAdditionalBudgets } from '~/composables/additionalBudget/useAdditionalBudgets'
 import { useObligations } from '~/composables/obligation/useObligations'
 import { useDisbursements } from '~/composables/disbursement/useDisbursements'
@@ -828,78 +841,202 @@ const {
   formatNumber,
   formatDate,
   loadProject,
-  pieChartData,
-  utilizationChartData,
   timelineProgress,
   timelineMilestones,
   daysRemaining,
   exportLogsToExcel,
 } = useProjectDetail(projectId)
 
-const { fetchBudgetsByProject } = useAdditionalBudgets()
-const additionalBudgets = ref<any[]>([])
-const budgetsLoading = ref(false)
-const budgetsError = ref<string | null>(null)
+// Use composables for CRUD operations
+const { 
+  additionalBudgets, 
+  obligations, 
+  disbursements,
+  loading: financialsLoading,
+  error: financialsError,
+  loadFinancials,
+  totalObligations,
+  totalDisbursements,
+  approvedDisbursements,
+  pendingDisbursements,
+  remainingObligations,
+  utilizationRate: getUtilizationRate,
+} = useProjectFinancials(projectId)
 
-const loadBudgets = async () => {
-  if (!projectId) return
-  budgetsLoading.value = true
-  budgetsError.value = null
-  try {
-    const budgets = await fetchBudgetsByProject(projectId)
-    additionalBudgets.value = budgets
-  } catch (err: any) {
-    budgetsError.value = err?.message || 'Failed to load budgets'
-  } finally {
-    budgetsLoading.value = false
-  }
-}
+const { createBudget } = useAdditionalBudgets()
+const { createObligation } = useObligations()
+const { createDisbursement } = useDisbursements()
 
-const { fetchObligationsByProject } = useObligations()
-const obligations = ref<any[]>([])
-const obligationsLoading = ref(false)
-const obligationsError = ref<string | null>(null)
-
-const loadObligations = async () => {
-  if (!projectId) return
-  obligationsLoading.value = true
-  obligationsError.value = null
-  try {
-    const obligationsList = await fetchObligationsByProject(projectId)
-    obligations.value = obligationsList
-  } catch (err: any) {
-    obligationsError.value = err?.message || 'Failed to load obligations'
-  } finally {
-    obligationsLoading.value = false
-  }
-}
-
-const totalObligations = computed(() => {
-  return obligations.value.reduce((sum, obligation) => sum + (obligation.amount || 0), 0)
-})
-
-const { fetchDisbursementsByProject, createDisbursement } = useDisbursements()
-const disbursements = ref<any[]>([])
-const disbursementsLoading = ref(false)
-const disbursementsError = ref<string | null>(null)
 const isDisbursementModalOpen = ref(false)
 
-const loadDisbursements = async () => {
-  if (!projectId) return
-  disbursementsLoading.value = true
-  disbursementsError.value = null
-  try {
-    const disbursementsList = await fetchDisbursementsByProject(projectId)
-    disbursements.value = disbursementsList
-  } catch (err: any) {
-    disbursementsError.value = err?.message || 'Failed to load disbursements'
-  } finally {
-    disbursementsLoading.value = false
+// Computed properties using composable data
+const remainingBalance = computed(() => {
+  if (!project.value) return 0
+  const totalBudget = project.value.appropriation + (project.value.totalAddedBudget || 0)
+  return totalBudget - totalDisbursements.value
+})
+
+const utilizationRate = computed(() => {
+  return getUtilizationRate.value(project.value)
+})
+
+const formatUtilizationRate = (rate: number) => {
+  if (rate === 0) return '0.00'
+  if (rate < 0.01) {
+    // For very small percentages, show more decimal places
+    return rate.toFixed(4)
   }
+  return rate.toFixed(2)
 }
 
-const totalDisbursements = computed(() => {
-  return disbursements.value.reduce((sum, disbursement) => sum + (disbursement.amount || 0), 0)
+// Budget Distribution Pie Chart - shows how budget is allocated
+const pieChartData = computed(() => {
+  if (!project.value) return { series: [], options: {} }
+
+  const appropriation = project.value.appropriation || 0
+  const totalAddedBudget = project.value.totalAddedBudget || 0
+  const totalBudget = appropriation + totalAddedBudget
+  
+  if (totalBudget === 0) {
+    return {
+      series: [100],
+      options: {
+        chart: {
+          type: 'pie',
+          height: 350,
+        },
+        colors: ['#E5E7EB'],
+        labels: ['No Budget'],
+        legend: {
+          position: 'bottom',
+        },
+        dataLabels: {
+          enabled: true,
+          formatter: () => '0%',
+        },
+      },
+    }
+  }
+
+  const approvedDisbursed = approvedDisbursements.value
+  const remaining = Math.max(0, totalBudget - approvedDisbursed)
+  
+  // Calculate percentages with more precision
+  const approvedPercentage = totalBudget > 0 ? (approvedDisbursed / totalBudget) * 100 : 0
+  const remainingPercentage = totalBudget > 0 ? (remaining / totalBudget) * 100 : 100
+
+  // Always show both slices if there are approved disbursements, even if very small
+  const series = approvedDisbursed > 0 
+    ? [Math.max(0.01, approvedPercentage), Math.min(99.99, remainingPercentage)]
+    : [remainingPercentage]
+
+  return {
+    series,
+    options: {
+      chart: {
+        type: 'pie',
+        height: 350,
+      },
+      colors: approvedDisbursed > 0 ? ['#10B981', '#E5E7EB'] : ['#E5E7EB'],
+      labels: approvedDisbursed > 0 ? ['Approved Disbursements', 'Remaining Budget'] : ['Remaining Budget'],
+      legend: {
+        position: 'bottom',
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: (val: number) => {
+          // Show more decimal places for very small percentages
+          if (val < 0.1) return `${val.toFixed(4)}%`
+          if (val < 1) return `${val.toFixed(2)}%`
+          return `${val.toFixed(1)}%`
+        },
+      },
+      tooltip: {
+        y: {
+          formatter: (val: number) => {
+            const amount = totalBudget * (val / 100)
+            return `₱${formatNumber(amount)} (${val.toFixed(2)}%)`
+          },
+        },
+      },
+    },
+  }
+})
+
+// Utilization Rate Pie Chart - shows utilization vs available
+const utilizationChartData = computed(() => {
+  if (!project.value) return { series: [], options: {} }
+
+  const appropriation = project.value.appropriation || 0
+  const totalAddedBudget = project.value.totalAddedBudget || 0
+  const totalBudget = appropriation + totalAddedBudget
+  
+  if (totalBudget === 0) {
+    return {
+      series: [0, 100],
+      options: {
+        chart: {
+          type: 'pie',
+          height: 350,
+        },
+        colors: ['#E5E7EB', '#E5E7EB'],
+        labels: ['Utilized', 'Available'],
+        legend: {
+          position: 'bottom',
+        },
+        dataLabels: {
+          enabled: true,
+          formatter: (val: number) => `${val.toFixed(1)}%`,
+        },
+      },
+    }
+  }
+
+  const utilized = approvedDisbursements.value
+  const available = Math.max(0, totalBudget - utilized)
+  
+  // Calculate percentages with more precision
+  const utilizationRate = totalBudget > 0 ? (utilized / totalBudget) * 100 : 0
+  const availableRate = totalBudget > 0 ? (available / totalBudget) * 100 : 100
+
+  // Always show both slices if there are utilized funds, even if very small
+  // Use minimum 0.01% to ensure the slice is visible
+  const series = utilized > 0 
+    ? [Math.max(0.01, utilizationRate), Math.min(99.99, availableRate)]
+    : [0, 100]
+
+  return {
+    series,
+    options: {
+      chart: {
+        type: 'pie',
+        height: 350,
+      },
+      colors: utilized > 0 ? ['#10B981', '#E5E7EB'] : ['#E5E7EB', '#E5E7EB'],
+      labels: ['Utilized', 'Available'],
+      legend: {
+        position: 'bottom',
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: (val: number) => {
+          // Show more decimal places for very small percentages
+          if (val < 0.1) return `${val.toFixed(4)}%`
+          if (val < 1) return `${val.toFixed(2)}%`
+          return `${val.toFixed(1)}%`
+        },
+      },
+      tooltip: {
+        y: {
+          formatter: (val: number) => {
+            const amount = totalBudget * (val / 100)
+            return `₱${formatNumber(amount)} (${val.toFixed(2)}%)`
+          },
+        },
+      },
+    },
+    utilizationRate: utilizationRate.toFixed(2),
+  }
 })
 
 const handleSaveDisbursement = async (disbursementData: {
@@ -919,7 +1056,7 @@ const handleSaveDisbursement = async (disbursementData: {
       approvedBy: disbursementData.approvedBy,
       approvedDate: disbursementData.approvedDate ? new Date(disbursementData.approvedDate) : undefined,
     })
-    await loadDisbursements()
+    await loadFinancials()
     isDisbursementModalOpen.value = false
   } catch (err: any) {
     console.error('Failed to create disbursement:', err)
@@ -932,30 +1069,20 @@ const closeDisbursementModal = () => {
 
 watch(() => project.value?.id, async (newId) => {
   if (newId) {
-    await loadBudgets()
-    await loadObligations()
-    await loadDisbursements()
+    await loadFinancials()
   }
 })
 
 watch(() => activeTab.value, (newTab) => {
-  if (newTab === TAB_IDS.BUDGET && project.value?.id) {
-    loadBudgets()
-  }
-  if (newTab === TAB_IDS.OBLIGATIONS && project.value?.id) {
-    loadObligations()
-  }
-  if (newTab === TAB_IDS.DISBURSEMENTS && project.value?.id) {
-    loadDisbursements()
+  if ((newTab === TAB_IDS.BUDGET || newTab === TAB_IDS.OBLIGATIONS || newTab === TAB_IDS.DISBURSEMENTS) && project.value?.id) {
+    loadFinancials()
   }
 })
 
 onMounted(async () => {
   await loadProject()
   if (project.value?.id) {
-    await loadBudgets()
-    await loadObligations()
-    await loadDisbursements()
+    await loadFinancials()
   }
 })
 </script>

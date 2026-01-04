@@ -60,6 +60,15 @@
               </div>
             </div>
 
+            <div v-if="saveError" class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-6">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-red-700">{{ saveError }}</p>
+              </div>
+            </div>
+
             <div v-else-if="filteredPayments.length === 0" class="text-center py-12 flex-1 flex items-center justify-center">
               <div class="text-gray-400 mb-2">
                 <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,22 +118,49 @@
                       <span :class="[
                         'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
                         payment.status === 'approved' ? 'bg-green-100 text-green-800' :
-                        payment.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                        payment.status === 'denied' ? 'bg-red-100 text-red-800' :
                         'bg-yellow-100 text-yellow-800'
                       ]">
-                        {{ payment.status?.charAt(0).toUpperCase() + payment.status?.slice(1) || 'Pending' }}
+                        {{ payment.status ? (payment.status.charAt(0).toUpperCase() + payment.status.slice(1)) : 'Pending' }}
                       </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {{ formatDate(payment.createdAt) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        @click="viewPaymentDetails(payment)"
-                        class="text-blue-600 hover:text-blue-900 mr-4"
-                      >
-                        View
-                      </button>
+                      <div v-if="payment.status === 'pending' && payment.id" class="flex items-center gap-2">
+                        <button
+                          @click="handleApprove(payment.id)"
+                          :disabled="updatingId === payment.id"
+                          class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs"
+                        >
+                          <span v-if="updatingId !== payment.id">Approve</span>
+                          <span v-else class="flex items-center">
+                            <svg class="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                          </span>
+                        </button>
+                        <button
+                          @click="handleDeny(payment.id)"
+                          :disabled="updatingId === payment.id"
+                          class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs"
+                        >
+                          <span v-if="updatingId !== payment.id">Deny</span>
+                          <span v-else class="flex items-center">
+                            <svg class="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                          </span>
+                        </button>
+                      </div>
+                      <span v-else class="text-gray-400 text-xs">
+                        {{ payment.status === 'approved' ? 'Approved' : payment.status === 'denied' ? 'Denied' : 'N/A' }}
+                      </span>
                     </td>
                   </tr>
                 </tbody>
@@ -148,29 +184,30 @@ import StatCard from '~/components/ui/StatCard.vue'
 import SearchInput from '~/components/ui/SearchInput.vue'
 import { getIconBgColor } from '~/constants/ui/statColors'
 import { useProjectFormatting } from '~/composables/project/useProjectFormatting'
+import { useDisbursements } from '~/composables/disbursement/useDisbursements'
 
 const searchQuery = ref('')
-const loading = ref(false)
-const error = ref<string | null>(null)
-const payments = ref<any[]>([])
-
+const { disbursements, loading, error, fetchDisbursements, updateStatus, saveError } = useDisbursements()
 const { formatNumber, formatDate } = useProjectFormatting()
+const updatingId = ref<string | null>(null)
 
-// Mock data for now - replace with actual API call
+// Map disbursements to payments format for display
+const payments = computed(() => {
+  return disbursements.value.map(disbursement => ({
+    id: disbursement.id,
+    payee: disbursement.payee,
+    projectName: disbursement.projectName || 'N/A',
+    amount: disbursement.amount,
+    status: disbursement.status,
+    createdAt: disbursement.createdAt,
+    approvedBy: disbursement.approvedBy,
+    approvedDate: disbursement.approvedDate,
+    reason: disbursement.reason,
+  }))
+})
+
 onMounted(async () => {
-  loading.value = true
-  try {
-    // TODO: Replace with actual API call
-    // const response = await $fetch('/api/payments')
-    // payments.value = response.payments || []
-    
-    // Mock data
-    payments.value = []
-  } catch (err: any) {
-    error.value = err?.message || 'Failed to load payments'
-  } finally {
-    loading.value = false
-  }
+  await fetchDisbursements()
 })
 
 const filteredPayments = computed(() => {
@@ -215,9 +252,28 @@ const displayStats = computed(() => [
   }
 ])
 
-const viewPaymentDetails = (payment: any) => {
-  // TODO: Navigate to payment details page or open modal
-  console.log('View payment:', payment)
+const handleApprove = async (id: string) => {
+  updatingId.value = id
+  try {
+    await updateStatus(id, 'approved')
+    await fetchDisbursements() // Refresh the list
+  } catch (err: any) {
+    console.error('Failed to approve disbursement:', err)
+  } finally {
+    updatingId.value = null
+  }
+}
+
+const handleDeny = async (id: string) => {
+  updatingId.value = id
+  try {
+    await updateStatus(id, 'denied')
+    await fetchDisbursements() // Refresh the list
+  } catch (err: any) {
+    console.error('Failed to deny disbursement:', err)
+  } finally {
+    updatingId.value = null
+  }
 }
 </script>
 

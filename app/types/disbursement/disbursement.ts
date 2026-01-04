@@ -1,6 +1,7 @@
 export interface IDisbursement {
   id?: string
   projectId: string
+  projectName?: string
   amount: number
   reason: string
   payee: string

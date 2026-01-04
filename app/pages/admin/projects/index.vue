@@ -129,6 +129,67 @@
                           {{ formatDate(project.startDate) }} - {{ formatDate(project.endDate) }}
                         </span>
                       </div>
+                      
+                      <!-- Budget & Financial Information Section -->
+                      <div class="mt-4 pt-4 border-t border-gray-100">
+                        <button
+                          @click.stop="toggleFinancialInfo(project.id!)"
+                          class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                        >
+                          <svg 
+                            class="w-4 h-4 transition-transform"
+                            :class="{ 'rotate-90': expandedFinancialInfoId === project.id }"
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                          </svg>
+                          Budget & Financial Information
+                        </button>
+                        
+                        <div 
+                          v-if="expandedFinancialInfoId === project.id"
+                          class="mt-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
+                        >
+                          <div class="bg-gray-50 rounded-lg p-3">
+                            <p class="text-xs font-medium text-gray-500 mb-1">Total Budget</p>
+                            <p class="text-sm font-bold text-gray-900">₱{{ formatNumber(project.appropriation) }}</p>
+                          </div>
+                          <div class="bg-gray-50 rounded-lg p-3">
+                            <p class="text-xs font-medium text-gray-500 mb-1">Added Budget</p>
+                            <p class="text-sm font-bold text-gray-900">₱{{ formatNumber(project.totalAddedBudget || 0) }}</p>
+                          </div>
+                          <div class="bg-gray-50 rounded-lg p-3">
+                            <p class="text-xs font-medium text-gray-500 mb-1">Remaining Balance</p>
+                            <p class="text-sm font-bold" :class="getRemainingBalance(project) >= 0 ? 'text-green-600' : 'text-red-600'">
+                              ₱{{ formatNumber(getRemainingBalance(project)) }}
+                            </p>
+                          </div>
+                          <div class="bg-gray-50 rounded-lg p-3">
+                            <p class="text-xs font-medium text-gray-500 mb-1">Total Obligations</p>
+                            <p class="text-sm font-bold text-gray-900">₱{{ formatNumber(getProjectFinancialData(project.id!)?.totalObligations || 0) }}</p>
+                          </div>
+                          <div class="bg-gray-50 rounded-lg p-3">
+                            <p class="text-xs font-medium text-gray-500 mb-1">Remaining Obligations</p>
+                            <p class="text-sm font-bold text-orange-600">₱{{ formatNumber(getProjectFinancialData(project.id!)?.remainingObligations || 0) }}</p>
+                          </div>
+                          <div class="bg-gray-50 rounded-lg p-3">
+                            <p class="text-xs font-medium text-gray-500 mb-1">Total Disbursements</p>
+                            <p class="text-sm font-bold text-gray-900">₱{{ formatNumber(getProjectFinancialData(project.id!)?.totalDisbursements || 0) }}</p>
+                          </div>
+                          <div class="bg-gray-50 rounded-lg p-3">
+                            <p class="text-xs font-medium text-gray-500 mb-1">Approved Disbursements</p>
+                            <p class="text-sm font-bold text-green-600">₱{{ formatNumber(getProjectFinancialData(project.id!)?.approvedDisbursements || 0) }}</p>
+                          </div>
+                          <div class="bg-gray-50 rounded-lg p-3">
+                            <p class="text-xs font-medium text-gray-500 mb-1">Utilization Rate</p>
+                            <p class="text-sm font-bold" :class="getUtilizationRate(project) >= 100 ? 'text-red-600' : getUtilizationRate(project) >= 80 ? 'text-yellow-600' : 'text-green-600'">
+                              {{ formatUtilizationRate(getUtilizationRate(project)) }}%
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div class="flex items-center gap-2 flex-shrink-0">
@@ -253,6 +314,7 @@ import AddDisbursement from '~/components/projects/AddDisbursement.vue'
 import { useProjects } from '~/composables/project/useProjects'
 import { useProjectSearch } from '~/composables/project/useProjectSearch'
 import { useProjectFormatting } from '~/composables/project/useProjectFormatting'
+import { useProjectFinancials } from '~/composables/project/useProjectFinancials'
 import { useAdditionalBudgets } from '~/composables/additionalBudget/useAdditionalBudgets'
 import { useObligations } from '~/composables/obligation/useObligations'
 import { useDisbursements } from '~/composables/disbursement/useDisbursements'
@@ -267,6 +329,14 @@ const isBudgetModalOpen = ref(false)
 const isObligationModalOpen = ref(false)
 const isDisbursementModalOpen = ref(false)
 const selectedProjectId = ref('')
+const expandedFinancialInfoId = ref<string | null>(null)
+const projectFinancialData = ref<Map<string, {
+  totalObligations: number
+  remainingObligations: number
+  totalDisbursements: number
+  approvedDisbursements: number
+  utilizationRate: number
+}>>(new Map())
 
 const { projects, saveError, fetchProjects, projectStats } = useProjects()
 const { canManageProjects } = useUserPermissions()
@@ -384,6 +454,10 @@ const handleSaveBudget = async (budgetData: {
     closeBudgetModal()
     // Refresh projects to update total added budget
     await fetchProjects()
+    // Refresh financial data if it's currently expanded
+    if (expandedFinancialInfoId.value === budgetData.projectId) {
+      await loadProjectFinancialData(budgetData.projectId)
+    }
   } catch (error) {
     // Error is handled by the composable
     console.error('Failed to save budget:', error)
@@ -412,6 +486,10 @@ const handleSaveObligation = async (obligationData: {
     closeObligationModal()
     // Refresh projects to update any obligation-related data
     await fetchProjects()
+    // Refresh financial data if it's currently expanded
+    if (expandedFinancialInfoId.value === obligationData.projectId) {
+      await loadProjectFinancialData(obligationData.projectId)
+    }
   } catch (error) {
     // Error is handled by the composable
     console.error('Failed to save obligation:', error)
@@ -438,10 +516,83 @@ const handleSaveDisbursement = async (disbursementData: {
     closeDisbursementModal()
     // Refresh projects to update any disbursement-related data
     await fetchProjects()
+    // Refresh financial data if it's currently expanded
+    if (expandedFinancialInfoId.value === disbursementData.projectId) {
+      await loadProjectFinancialData(disbursementData.projectId)
+    }
   } catch (error) {
     // Error is handled by the composable
     console.error('Failed to save disbursement:', error)
   }
+}
+
+const toggleFinancialInfo = async (projectId: string) => {
+  if (expandedFinancialInfoId.value === projectId) {
+    expandedFinancialInfoId.value = null
+  } else {
+    expandedFinancialInfoId.value = projectId
+    // Load financial data if not already loaded
+    if (!projectFinancialData.value.has(projectId)) {
+      await loadProjectFinancialData(projectId)
+    }
+  }
+}
+
+const loadProjectFinancialData = async (projectId: string) => {
+  try {
+    const financials = useProjectFinancials(projectId)
+    await financials.loadFinancials()
+
+    // Find the project to get appropriation and totalAddedBudget
+    const project = projects.value.find(p => p.id === projectId) || null
+    const utilizationRate = financials.utilizationRate.value(project)
+
+    projectFinancialData.value.set(projectId, {
+      totalObligations: financials.totalObligations.value,
+      remainingObligations: financials.remainingObligations.value,
+      totalDisbursements: financials.totalDisbursements.value,
+      approvedDisbursements: financials.approvedDisbursements.value,
+      utilizationRate
+    })
+  } catch (error) {
+    console.error('Failed to load financial data:', error)
+  }
+}
+
+const getProjectFinancialData = (projectId: string) => {
+  return projectFinancialData.value.get(projectId) || {
+    totalObligations: 0,
+    remainingObligations: 0,
+    totalDisbursements: 0,
+    approvedDisbursements: 0,
+    utilizationRate: 0
+  }
+}
+
+const getUtilizationRate = (project: any) => {
+  const financialData = getProjectFinancialData(project.id)
+  if (financialData.utilizationRate > 0) {
+    return financialData.utilizationRate
+  }
+  // Fallback calculation if data not loaded yet
+  const totalBudget = project.appropriation + (project.totalAddedBudget || 0)
+  if (totalBudget === 0) return 0
+  return (financialData.approvedDisbursements / totalBudget) * 100
+}
+
+const getRemainingBalance = (project: any) => {
+  const totalBudget = project.appropriation + (project.totalAddedBudget || 0)
+  const financialData = getProjectFinancialData(project.id)
+  return totalBudget - financialData.totalDisbursements
+}
+
+const formatUtilizationRate = (rate: number) => {
+  if (rate === 0) return '0.00'
+  if (rate < 0.01) {
+    // For very small percentages, show more decimal places
+    return rate.toFixed(4)
+  }
+  return rate.toFixed(2)
 }
 
 // Close dropdown when clicking outside

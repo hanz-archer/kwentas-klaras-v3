@@ -38,5 +38,12 @@ export class ObligationRepository implements IObligationRepository {
       return b.createdAt.getTime() - a.createdAt.getTime();
     });
   }
+
+  async update(id: string, data: Prisma.ObligationUpdateInput): Promise<Obligation> {
+    return this.client.obligation.update({
+      where: { id },
+      data,
+    });
+  }
 }
 

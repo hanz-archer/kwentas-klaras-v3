@@ -29,6 +29,8 @@ export const useObligations = () => {
     try {
       const response = await $fetch<{ success: boolean; obligations: IObligation[] }>(`/api/obligations/project/${projectId}`)
       if (response.success) {
+        // Update local state if fetching for a specific project
+        obligations.value = response.obligations
         return response.obligations
       }
       return []

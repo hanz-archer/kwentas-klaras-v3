@@ -29,6 +29,8 @@ export const useDisbursements = () => {
     try {
       const response = await $fetch<{ success: boolean; disbursements: IDisbursement[] }>(`/api/disbursements/project/${projectId}`)
       if (response.success) {
+        // Update local state if fetching for a specific project
+        disbursements.value = response.disbursements
         return response.disbursements
       }
       return []
@@ -59,11 +61,51 @@ export const useDisbursements = () => {
       })
 
       if (response.success) {
-        disbursements.value.push(response.disbursement)
+        // Add to local state
+        const index = disbursements.value.findIndex(d => d.id === response.disbursement.id)
+        if (index === -1) {
+          disbursements.value.push(response.disbursement)
+        } else {
+          disbursements.value[index] = response.disbursement
+        }
         return response.disbursement
       }
     } catch (err: any) {
       saveError.value = err?.data?.message || err?.message || 'Failed to create disbursement'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateStatus = async (
+    id: string,
+    status: 'pending' | 'approved' | 'denied',
+    approvedBy?: string,
+    approvedDate?: Date
+  ) => {
+    loading.value = true
+    saveError.value = null
+
+    try {
+      const response = await $fetch<{ success: boolean; disbursement: IDisbursement }>(`/api/disbursements/${id}`, {
+        method: 'PUT',
+        body: {
+          status,
+          approvedBy,
+          approvedDate: approvedDate?.toISOString(),
+        },
+      })
+
+      if (response.success) {
+        const index = disbursements.value.findIndex(d => d.id === id)
+        if (index !== -1) {
+          disbursements.value[index] = response.disbursement
+        }
+        return response.disbursement
+      }
+    } catch (err: any) {
+      saveError.value = err?.data?.message || err?.message || 'Failed to update disbursement status'
       throw err
     } finally {
       loading.value = false
@@ -78,6 +120,7 @@ export const useDisbursements = () => {
     fetchDisbursements,
     fetchDisbursementsByProject,
     createDisbursement,
+    updateStatus,
   }
 }
 

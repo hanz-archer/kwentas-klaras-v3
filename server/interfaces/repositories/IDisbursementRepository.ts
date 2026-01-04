@@ -5,5 +5,6 @@ export interface IDisbursementRepository {
   findAll(): Promise<Disbursement[]>;
   findById(id: string): Promise<Disbursement | null>;
   findByProjectId(projectId: string): Promise<Disbursement[]>;
+  update(id: string, data: Prisma.DisbursementUpdateInput): Promise<Disbursement>;
 }
 
