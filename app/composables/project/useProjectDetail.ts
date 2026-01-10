@@ -19,12 +19,19 @@ export const useProjectDetail = (projectId: string) => {
   }
   const { formatNumber, formatDate } = useProjectFormatting()
 
+  const route = useRoute()
   const project = ref<Project | null>(null)
-  const activeTab = ref('summary')
+  const activeTab = ref(route.query.tab as string || 'summary')
   const activities = ref<ProjectActivity[]>([])
   const activitiesLoading = ref(false)
 
   const tabs = PROJECT_DETAIL_TABS
+
+  watch(() => route.query.tab, (newTab) => {
+    if (newTab && typeof newTab === 'string') {
+      activeTab.value = newTab
+    }
+  })
 
   const formatDateTime = (date: string | Date | null | undefined): string => {
     if (!date) return 'N/A'

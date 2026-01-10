@@ -66,13 +66,11 @@ export const useProjectFinancials = (projectId: string | Ref<string | null>) => 
       .reduce((sum, d) => sum + (d.amount || 0), 0)
   })
 
-  const remainingBalance = computed(() => {
-    return (project: Project | null) => {
-      if (!project) return 0
-      const totalBudget = project.appropriation + (project.totalAddedBudget || 0)
-      return totalBudget - totalDisbursements.value
-    }
-  })
+  const getRemainingBalance = (project: Project | null): number => {
+    if (!project) return 0
+    const totalBudget = project.appropriation + (project.totalAddedBudget || 0)
+    return totalBudget - totalDisbursements.value
+  }
 
   const remainingObligations = computed(() => {
     return Math.max(0, totalObligations.value - approvedDisbursements.value)
@@ -99,7 +97,7 @@ export const useProjectFinancials = (projectId: string | Ref<string | null>) => 
     totalDisbursements,
     approvedDisbursements,
     pendingDisbursements,
-    remainingBalance,
+    getRemainingBalance,
     remainingObligations,
     utilizationRate,
   }

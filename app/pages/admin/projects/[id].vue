@@ -77,7 +77,7 @@
                 <button
                   v-for="tab in tabs"
                   :key="tab.id"
-                  @click="activeTab = tab.id"
+                  @click="setActiveTab(tab.id)"
                   :class="[
                     'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 relative',
                     activeTab === tab.id
@@ -245,8 +245,20 @@
               <div :class="[...animations.cardClasses.value]" class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6">
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-lg font-semibold text-gray-900">Added Budget</h3>
-                  <div class="text-sm text-gray-600">
-                    Total: <span class="font-semibold text-gray-900">₱{{ formatNumber(project.totalAddedBudget || 0) }}</span>
+                  <div class="flex items-center gap-4">
+                    <div class="text-sm text-gray-600">
+                      Total: <span class="font-semibold text-gray-900">₱{{ formatNumber(project.totalAddedBudget || 0) }}</span>
+                    </div>
+                    <button
+                      v-if="canManageProjects"
+                      @click="() => router.push(`/admin/projects/add-budget/${projectId}`)"
+                      class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add Additional Budget
+                    </button>
                   </div>
                 </div>
                 
@@ -323,8 +335,20 @@
               <div :class="[...animations.cardClasses.value]" class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6">
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-lg font-semibold text-gray-900">Added Obligations</h3>
-                  <div class="text-sm text-gray-600">
-                    Total: <span class="font-semibold text-gray-900">₱{{ formatNumber(totalObligations) }}</span>
+                  <div class="flex items-center gap-4">
+                    <div class="text-sm text-gray-600">
+                      Total: <span class="font-semibold text-gray-900">₱{{ formatNumber(totalObligations) }}</span>
+                    </div>
+                    <button
+                      v-if="canManageProjects"
+                      @click="() => router.push(`/admin/projects/add-obligation/${projectId}`)"
+                      class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add Obligation
+                    </button>
                   </div>
                 </div>
                 
@@ -411,8 +435,8 @@
                     </div>
                     <button
                       v-if="canManageProjects"
-                      @click="isDisbursementModalOpen = true"
-                      class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                      @click="() => router.push(`/admin/projects/add-disbursement/${projectId}`)"
+                      class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -823,36 +847,32 @@
       </div>
     </main>
 
-    <AddDisbursement
-      :is-open="isDisbursementModalOpen"
-      :project-id="projectId"
-      @close="closeDisbursementModal"
-      @save="handleSaveDisbursement"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 import PieChart from '~/components/ui/PieChart.vue'
 import Accordion from '~/components/ui/Accordion.vue'
-import AddDisbursement from '~/components/projects/AddDisbursement.vue'
 import GeotagMap from '~/components/shared/GeotagMap.vue'
 import ProjectDetailSkeleton from '~/components/skeletons/admin/projects/ProjectDetailSkeleton.vue'
 import { useProjectDetail } from '~/composables/project/useProjectDetail'
 import { useProjectFinancials } from '~/composables/project/useProjectFinancials'
-import { useAdditionalBudgets } from '~/composables/additionalBudget/useAdditionalBudgets'
-import { useObligations } from '~/composables/obligation/useObligations'
-import { useDisbursements } from '~/composables/disbursement/useDisbursements'
+import { useProjectCharts } from '~/composables/project/useProjectCharts'
+import { useProjectDetailActions } from '~/composables/project/useProjectDetailActions'
 import { TAB_IDS } from '~/constants/project/detailTabs'
 import { useUserPermissions } from '~/composables/user/useUserPermissions'
 import { useLoadingState } from '~/composables/ui/useLoadingState'
 import { usePageAnimations } from '~/composables/ui/usePageAnimations'
 
 const route = useRoute()
-const animations = usePageAnimations()
 const router = useRouter()
+const animations = usePageAnimations()
 const projectId = route.params.id as string
 const { canManageProjects } = useUserPermissions()
+
+const setActiveTab = (tabId: string) => {
+  router.replace({ query: { ...route.query, tab: tabId } })
+}
 
 const handleEditClick = () => {
   router.push(`/admin/projects/edit/${projectId}`)
@@ -866,9 +886,6 @@ const {
   tabs,
   auditLogs,
   activitiesLoading,
-  activities,
-  projectStatus,
-  projectStatusClass,
   formatDuration,
   formatNumber,
   formatDate,
@@ -881,10 +898,9 @@ const {
 
 const { showLoading, markAsLoaded } = useLoadingState(loading)
 
-// Use composables for CRUD operations
-const { 
-  additionalBudgets, 
-  obligations, 
+const {
+  additionalBudgets,
+  obligations,
   disbursements,
   loading: financialsLoading,
   error: financialsError,
@@ -894,216 +910,20 @@ const {
   approvedDisbursements,
   pendingDisbursements,
   remainingObligations,
+  getRemainingBalance,
   utilizationRate: getUtilizationRate,
 } = useProjectFinancials(projectId)
 
-const { createBudget } = useAdditionalBudgets()
-const { createObligation } = useObligations()
-const { createDisbursement } = useDisbursements()
+const remainingBalance = computed(() => getRemainingBalance(project.value))
 
-const isDisbursementModalOpen = ref(false)
+const utilizationRate = computed(() => getUtilizationRate.value(project.value))
 
-// Computed properties using composable data
-const remainingBalance = computed(() => {
-  if (!project.value) return 0
-  const totalBudget = project.value.appropriation + (project.value.totalAddedBudget || 0)
-  return totalBudget - totalDisbursements.value
-})
+const { pieChartData, utilizationChartData, formatUtilizationRate } = useProjectCharts(
+  project,
+  approvedDisbursements
+)
 
-const utilizationRate = computed(() => {
-  return getUtilizationRate.value(project.value)
-})
-
-const formatUtilizationRate = (rate: number) => {
-  if (rate === 0) return '0.00'
-  if (rate < 0.01) {
-    // For very small percentages, show more decimal places
-    return rate.toFixed(4)
-  }
-  return rate.toFixed(2)
-}
-
-// Budget Distribution Pie Chart - shows how budget is allocated
-const pieChartData = computed(() => {
-  if (!project.value) return { series: [], options: {} }
-
-  const appropriation = project.value.appropriation || 0
-  const totalAddedBudget = project.value.totalAddedBudget || 0
-  const totalBudget = appropriation + totalAddedBudget
-  
-  if (totalBudget === 0) {
-    return {
-      series: [100],
-      options: {
-        chart: {
-          type: 'pie',
-          height: 350,
-        },
-        colors: ['#E5E7EB'],
-        labels: ['No Budget'],
-        legend: {
-          position: 'bottom',
-        },
-        dataLabels: {
-          enabled: true,
-          formatter: () => '0%',
-        },
-      },
-    }
-  }
-
-  const approvedDisbursed = approvedDisbursements.value
-  const remaining = Math.max(0, totalBudget - approvedDisbursed)
-  
-  // Calculate percentages with more precision
-  const approvedPercentage = totalBudget > 0 ? (approvedDisbursed / totalBudget) * 100 : 0
-  const remainingPercentage = totalBudget > 0 ? (remaining / totalBudget) * 100 : 100
-
-  // Always show both slices if there are approved disbursements, even if very small
-  const series = approvedDisbursed > 0 
-    ? [Math.max(0.01, approvedPercentage), Math.min(99.99, remainingPercentage)]
-    : [remainingPercentage]
-
-  return {
-    series,
-    options: {
-      chart: {
-        type: 'pie',
-        height: 350,
-      },
-      colors: approvedDisbursed > 0 ? ['#10B981', '#E5E7EB'] : ['#E5E7EB'],
-      labels: approvedDisbursed > 0 ? ['Approved Disbursements', 'Remaining Budget'] : ['Remaining Budget'],
-      legend: {
-        position: 'bottom',
-      },
-      dataLabels: {
-        enabled: true,
-        formatter: (val: number) => {
-          // Show more decimal places for very small percentages
-          if (val < 0.1) return `${val.toFixed(4)}%`
-          if (val < 1) return `${val.toFixed(2)}%`
-          return `${val.toFixed(1)}%`
-        },
-      },
-      tooltip: {
-        y: {
-          formatter: (val: number) => {
-            const amount = totalBudget * (val / 100)
-            return `₱${formatNumber(amount)} (${val.toFixed(2)}%)`
-          },
-        },
-      },
-    },
-  }
-})
-
-// Utilization Rate Pie Chart - shows utilization vs available
-const utilizationChartData = computed(() => {
-  if (!project.value) return { series: [], options: {} }
-
-  const appropriation = project.value.appropriation || 0
-  const totalAddedBudget = project.value.totalAddedBudget || 0
-  const totalBudget = appropriation + totalAddedBudget
-  
-  if (totalBudget === 0) {
-    return {
-      series: [0, 100],
-      options: {
-        chart: {
-          type: 'pie',
-          height: 350,
-        },
-        colors: ['#E5E7EB', '#E5E7EB'],
-        labels: ['Utilized', 'Available'],
-        legend: {
-          position: 'bottom',
-        },
-        dataLabels: {
-          enabled: true,
-          formatter: (val: number) => `${val.toFixed(1)}%`,
-        },
-      },
-    }
-  }
-
-  const utilized = approvedDisbursements.value
-  const available = Math.max(0, totalBudget - utilized)
-  
-  // Calculate percentages with more precision
-  const utilizationRate = totalBudget > 0 ? (utilized / totalBudget) * 100 : 0
-  const availableRate = totalBudget > 0 ? (available / totalBudget) * 100 : 100
-
-  // Always show both slices if there are utilized funds, even if very small
-  // Use minimum 0.01% to ensure the slice is visible
-  const series = utilized > 0 
-    ? [Math.max(0.01, utilizationRate), Math.min(99.99, availableRate)]
-    : [0, 100]
-
-  return {
-    series,
-    options: {
-      chart: {
-        type: 'pie',
-        height: 350,
-      },
-      colors: utilized > 0 ? ['#10B981', '#E5E7EB'] : ['#E5E7EB', '#E5E7EB'],
-      labels: ['Utilized', 'Available'],
-      legend: {
-        position: 'bottom',
-      },
-      dataLabels: {
-        enabled: true,
-        formatter: (val: number) => {
-          // Show more decimal places for very small percentages
-          if (val < 0.1) return `${val.toFixed(4)}%`
-          if (val < 1) return `${val.toFixed(2)}%`
-          return `${val.toFixed(1)}%`
-        },
-      },
-      tooltip: {
-        y: {
-          formatter: (val: number) => {
-            const amount = totalBudget * (val / 100)
-            return `₱${formatNumber(amount)} (${val.toFixed(2)}%)`
-          },
-        },
-      },
-    },
-    utilizationRate: utilizationRate.toFixed(2),
-  }
-})
-
-const handleSaveDisbursement = async (disbursementData: {
-  projectId: string
-  amount: number
-  reason: string
-  payee: string
-  approvedBy?: string
-  approvedDate?: string
-}) => {
-  try {
-    await createDisbursement({
-      projectId: disbursementData.projectId,
-      amount: disbursementData.amount,
-      reason: disbursementData.reason,
-      payee: disbursementData.payee,
-      approvedBy: disbursementData.approvedBy,
-      approvedDate: disbursementData.approvedDate ? new Date(disbursementData.approvedDate) : undefined,
-    })
-    await loadFinancials()
-    isDisbursementModalOpen.value = false
-  } catch (err: any) {
-    console.error('Failed to create disbursement:', err)
-  }
-}
-
-const closeDisbursementModal = () => {
-  isDisbursementModalOpen.value = false
-}
-
-const handleMapSaved = async () => {
-  await loadProject()
-}
+const { handleMapSaved } = useProjectDetailActions(projectId, project, loadProject, loadFinancials)
 
 watch(() => project.value?.id, async (newId) => {
   if (newId) {
