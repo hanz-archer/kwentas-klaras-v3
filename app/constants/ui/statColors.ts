@@ -8,6 +8,8 @@ export const getStatIconColor = (color: string): string => {
       return 'text-brand-green'
     case 'orange':
       return 'text-orange-600'
+    case 'gray':
+      return 'text-gray-500'
     default:
       return 'text-gray-500'
   }
@@ -23,6 +25,8 @@ export const getIconBgColor = (color: string): string => {
       return 'bg-brand-green/10'
     case 'orange':
       return 'bg-orange-100'
+    case 'gray':
+      return 'bg-gray-100'
     default:
       return 'bg-gray-100'
   }

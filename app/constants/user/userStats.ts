@@ -31,8 +31,8 @@ export const calculateUserStats = (
       value: inactiveUsers.toString(),
       change: `${inactivePercentage}% of total`,
       changeType: 'neutral',
-      iconColor: 'text-orange-600',
-      color: 'orange'
+      iconColor: 'text-gray-900',
+      color: 'gray'
     },
     {
       title: 'Departments',

@@ -20,7 +20,7 @@ export const STAT_ICONS = {
     viewBox: '0 0 24 24',
   },
   inactive: {
-    path: 'M18 9v2m0 4v2m0-6a2 2 0 100-4 2 2 0 000 4zM3 13a2 2 0 110-4 2 2 0 010 4z',
+    path: 'M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 10h-6',
     viewBox: '0 0 24 24',
   },
   departments: {

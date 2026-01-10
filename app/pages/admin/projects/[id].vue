@@ -246,8 +246,8 @@
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-lg font-semibold text-gray-900">Added Budget</h3>
                   <div class="flex items-center gap-4">
-                    <div class="text-sm text-gray-600">
-                      Total: <span class="font-semibold text-gray-900">₱{{ formatNumber(project.totalAddedBudget || 0) }}</span>
+                  <div class="text-sm text-gray-600">
+                    Total: <span class="font-semibold text-gray-900">₱{{ formatNumber(project.totalAddedBudget || 0) }}</span>
                     </div>
                     <button
                       v-if="canManageProjects"
@@ -336,8 +336,8 @@
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-lg font-semibold text-gray-900">Added Obligations</h3>
                   <div class="flex items-center gap-4">
-                    <div class="text-sm text-gray-600">
-                      Total: <span class="font-semibold text-gray-900">₱{{ formatNumber(totalObligations) }}</span>
+                  <div class="text-sm text-gray-600">
+                    Total: <span class="font-semibold text-gray-900">₱{{ formatNumber(totalObligations) }}</span>
                     </div>
                     <button
                       v-if="canManageProjects"
@@ -898,9 +898,9 @@ const {
 
 const { showLoading, markAsLoaded } = useLoadingState(loading)
 
-const {
-  additionalBudgets,
-  obligations,
+const { 
+  additionalBudgets, 
+  obligations, 
   disbursements,
   loading: financialsLoading,
   error: financialsError,
