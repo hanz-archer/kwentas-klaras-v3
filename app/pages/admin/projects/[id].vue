@@ -27,7 +27,7 @@
           </div>
 
           <div v-else class="space-y-6">
-            <div class="flex items-center justify-between">
+            <div :class="[...animations.sectionClasses.value]" class="flex items-center justify-between">
               <h1 class="text-2xl font-bold text-gray-900">Project Details</h1>
               <div class="flex items-center gap-2">
                 <button
@@ -49,7 +49,7 @@
               </div>
             </div>
 
-            <div class="bg-white rounded-xl border border-gray-300 shadow-sm overflow-hidden">
+            <div :class="[...animations.cardClasses.value]" class="bg-white rounded-xl border border-gray-300 shadow-sm overflow-hidden">
               <div class="p-6">
                 <div class="space-y-6">
                   <div class="pb-6 border-b border-gray-200">
@@ -92,7 +92,7 @@
 
             <div v-if="activeTab === TAB_IDS.SUMMARY" class="space-y-6">
               <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 bg-white rounded-xl border border-gray-300 shadow-sm overflow-hidden">
+                <div :class="[...animations.cardClasses.value]" class="lg:col-span-2 bg-white rounded-xl border border-gray-300 shadow-sm overflow-hidden">
                   <div class="px-6 py-5 border-b border-gray-300">
                     <div class="flex items-center gap-3">
                       <div class="w-10 h-10 flex items-center justify-center">
@@ -168,7 +168,7 @@
                   </div>
                 </div>
 
-                <div class="space-y-6">
+                <div :class="[...animations.cardClasses.value]" class="space-y-6">
                   <PieChart
                     title="Utilization Rate"
                     :series="utilizationChartData.series"
@@ -179,7 +179,7 @@
                 </div>
               </div>
 
-              <div>
+              <div :class="[...animations.cardClasses.value]">
                 <PieChart
                   title="Budget Distribution"
                   :series="pieChartData.series"
@@ -189,7 +189,7 @@
                 />
               </div>
 
-              <div class="bg-white rounded-xl border border-gray-300 shadow-sm overflow-hidden">
+              <div :class="[...animations.cardClasses.value]" class="bg-white rounded-xl border border-gray-300 shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-gray-300">
                   <div class="flex items-center gap-3">
                     <div class="w-10 h-10 flex items-center justify-center">
@@ -205,39 +205,27 @@
                 </div>
                 <div class="p-6">
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-gray-50 rounded-lg p-4">
-                      <p class="text-xs font-medium text-gray-500 mb-1">Total Budget</p>
-                      <p class="text-lg font-bold text-gray-900">₱{{ formatNumber(project.appropriation) }}</p>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                      <p class="text-xs font-medium text-gray-500 mb-1">Total Added Budget</p>
-                      <p class="text-lg font-bold text-gray-900">₱{{ formatNumber(project.totalAddedBudget || 0) }}</p>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                      <p class="text-xs font-medium text-gray-500 mb-1">Remaining Balance</p>
-                      <p class="text-lg font-bold" :class="remainingBalance >= 0 ? 'text-green-600' : 'text-red-600'">
-                        ₱{{ formatNumber(remainingBalance) }}
-                      </p>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                      <p class="text-xs font-medium text-gray-500 mb-1">Total Obligations</p>
-                      <p class="text-lg font-bold text-gray-900">₱{{ formatNumber(totalObligations) }}</p>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                      <p class="text-xs font-medium text-gray-500 mb-1">Remaining Obligations</p>
-                      <p class="text-lg font-bold text-orange-600">₱{{ formatNumber(remainingObligations) }}</p>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                      <p class="text-xs font-medium text-gray-500 mb-1">Total Disbursements</p>
-                      <p class="text-lg font-bold text-gray-900">₱{{ formatNumber(totalDisbursements) }}</p>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                      <p class="text-xs font-medium text-gray-500 mb-1">Approved Disbursements</p>
-                      <p class="text-lg font-bold text-green-600">₱{{ formatNumber(approvedDisbursements) }}</p>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                      <p class="text-xs font-medium text-gray-500 mb-1">Pending Disbursements</p>
-                      <p class="text-lg font-bold text-yellow-600">₱{{ formatNumber(pendingDisbursements) }}</p>
+                    <div
+                      v-for="(item, index) in [
+                        { label: 'Total Budget', value: `₱${formatNumber(project.appropriation)}`, class: 'text-gray-900' },
+                        { label: 'Total Added Budget', value: `₱${formatNumber(project.totalAddedBudget || 0)}`, class: 'text-gray-900' },
+                        { label: 'Remaining Balance', value: `₱${formatNumber(remainingBalance)}`, class: remainingBalance >= 0 ? 'text-green-600' : 'text-red-600' },
+                        { label: 'Total Obligations', value: `₱${formatNumber(totalObligations)}`, class: 'text-gray-900' },
+                        { label: 'Remaining Obligations', value: `₱${formatNumber(remainingObligations)}`, class: 'text-orange-600' },
+                        { label: 'Total Disbursements', value: `₱${formatNumber(totalDisbursements)}`, class: 'text-gray-900' },
+                        { label: 'Approved Disbursements', value: `₱${formatNumber(approvedDisbursements)}`, class: 'text-green-600' },
+                        { label: 'Pending Disbursements', value: `₱${formatNumber(pendingDisbursements)}`, class: 'text-yellow-600' },
+                      ]"
+                      :key="index"
+                      :class="[
+                        ...animations.statCardClasses.value,
+                        animations.getStaggeredDelayClass(index),
+                      ]"
+                      :style="{ animationDelay: `${index * 0.05}s` }"
+                      class="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    >
+                      <p class="text-xs font-medium text-gray-500 mb-1">{{ item.label }}</p>
+                      <p :class="['text-lg font-bold', item.class]">{{ item.value }}</p>
                     </div>
                   </div>
                   <div class="mt-6 pt-6 border-t border-gray-100">
@@ -254,7 +242,7 @@
             </div>
 
             <div v-else-if="activeTab === TAB_IDS.BUDGET" class="space-y-6">
-              <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6">
+              <div :class="[...animations.cardClasses.value]" class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6">
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-lg font-semibold text-gray-900">Added Budget</h3>
                   <div class="text-sm text-gray-600">
@@ -285,6 +273,11 @@
                   <Accordion
                     v-for="(budget, index) in additionalBudgets"
                     :key="budget.id"
+                    :class="[
+                      ...animations.cardClasses.value,
+                      animations.getStaggeredDelayClass(index),
+                    ]"
+                    :style="{ animationDelay: `${index * 0.08}s` }"
                     :title="`Budget Entry #${index + 1}`"
                     :is-first="index === 0"
                   >
@@ -305,7 +298,7 @@
                           budget.status === 'rejected' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
                         ]">
-                          {{ budget.status?.charAt(0).toUpperCase() + budget.status?.slice(1) || 'Pending' }}
+                          {{ budget.status ? budget.status.charAt(0).toUpperCase() + budget.status.slice(1) : 'Pending' }}
                         </span>
                       </div>
                       <div v-if="budget.approvedBy" class="flex justify-between items-center py-2 border-b border-gray-100">
@@ -327,7 +320,7 @@
             </div>
 
             <div v-else-if="activeTab === TAB_IDS.OBLIGATIONS" class="space-y-6">
-              <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6">
+              <div :class="[...animations.cardClasses.value]" class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6">
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-lg font-semibold text-gray-900">Added Obligations</h3>
                   <div class="text-sm text-gray-600">
@@ -358,6 +351,11 @@
                   <Accordion
                     v-for="(obligation, index) in obligations"
                     :key="obligation.id"
+                    :class="[
+                      ...animations.cardClasses.value,
+                      animations.getStaggeredDelayClass(index),
+                    ]"
+                    :style="{ animationDelay: `${index * 0.08}s` }"
                     :title="`Obligation Entry #${index + 1}`"
                     :is-first="index === 0"
                   >
@@ -382,7 +380,7 @@
                           obligation.status === 'rejected' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
                         ]">
-                          {{ obligation.status?.charAt(0).toUpperCase() + obligation.status?.slice(1) || 'Pending' }}
+                          {{ obligation.status ? obligation.status.charAt(0).toUpperCase() + obligation.status.slice(1) : 'Pending' }}
                         </span>
                       </div>
                       <div v-if="obligation.approvedBy" class="flex justify-between items-center py-2 border-b border-gray-100">
@@ -404,7 +402,7 @@
             </div>
 
             <div v-else-if="activeTab === TAB_IDS.DISBURSEMENTS" class="space-y-6">
-              <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6">
+              <div :class="[...animations.cardClasses.value]" class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6">
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-lg font-semibold text-gray-900">Added Disbursements</h3>
                   <div class="flex items-center gap-4">
@@ -447,6 +445,11 @@
                   <Accordion
                     v-for="(disbursement, index) in disbursements"
                     :key="disbursement.id"
+                    :class="[
+                      ...animations.cardClasses.value,
+                      animations.getStaggeredDelayClass(index),
+                    ]"
+                    :style="{ animationDelay: `${index * 0.08}s` }"
                     :title="`Disbursement Entry #${index + 1}`"
                     :is-first="index === 0"
                   >
@@ -471,7 +474,7 @@
                           disbursement.status === 'denied' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
                         ]">
-                          {{ disbursement.status?.charAt(0).toUpperCase() + disbursement.status?.slice(1) || 'Pending' }}
+                          {{ disbursement.status ? disbursement.status.charAt(0).toUpperCase() + disbursement.status.slice(1) : 'Pending' }}
                         </span>
                       </div>
                       <div v-if="disbursement.approvedBy" class="flex justify-between items-center py-2 border-b border-gray-100">
@@ -493,7 +496,7 @@
             </div>
 
             <div v-else-if="activeTab === TAB_IDS.TIMELINE" class="space-y-6">
-              <div class="bg-white rounded-xl border border-gray-300 shadow-sm overflow-hidden">
+              <div :class="[...animations.cardClasses.value]" class="bg-white rounded-xl border border-gray-300 shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-gray-300">
                   <div class="flex items-center gap-3">
                     <div class="w-10 h-10 flex items-center justify-center">
@@ -516,7 +519,14 @@
                             <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ formatDate(milestone.date) }}</span>
                           </div>
                         </div>
-                        <div class="relative flex items-center py-2">
+                        <div
+                          :class="[
+                            'relative flex items-center py-2',
+                            ...animations.cardClasses.value,
+                            animations.getStaggeredDelayClass(index),
+                          ]"
+                          :style="{ animationDelay: `${index * 0.06}s` }"
+                        >
                           <div v-if="index > 0 && !milestone.isNewDay" 
                              class="absolute left-4 w-0.5 bg-gradient-to-b from-blue-200 to-blue-300"
                              :style="`height: 40px; top: -20px; z-index: 1;`"></div>
@@ -529,7 +539,7 @@
                         </div>
                         
                         <div class="ml-8 flex-1">
-                          <div class="bg-white backdrop-blur-sm rounded-full px-4 py-2.5 border w-full border-gray-100/50 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-200 group">
+                          <div :class="[...animations.hoverShadowClasses.value]" class="bg-white backdrop-blur-sm rounded-full px-4 py-2.5 border w-full border-gray-100/50 shadow-sm">
                             <div class="flex items-center justify-between gap-3">
                               <div class="flex-1">
                                 <h3 class="text-base font-semibold text-gray-900 group-hover:text-gray-900 transition-colors">{{ milestone.label }}</h3>
@@ -554,21 +564,23 @@
                   </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-8 border-t border-gray-200 mt-8">
-                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                      <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Start Date</p>
-                      <p class="text-base font-bold text-gray-900">{{ formatDate(project.startDate) }}</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                      <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">End Date</p>
-                      <p class="text-base font-bold text-gray-900">{{ formatDate(project.endDate) }}</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                      <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Duration</p>
-                      <p class="text-base font-bold text-gray-900">{{ formatDuration }}</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                      <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Year</p>
-                      <p class="text-base font-bold text-gray-900">{{ project.year }}</p>
+                    <div
+                      v-for="(item, index) in [
+                        { label: 'Start Date', value: formatDate(project.startDate) },
+                        { label: 'End Date', value: formatDate(project.endDate) },
+                        { label: 'Duration', value: formatDuration },
+                        { label: 'Year', value: project.year },
+                      ]"
+                      :key="index"
+                      :class="[
+                        ...animations.statCardClasses.value,
+                        animations.getStaggeredDelayClass(index),
+                      ]"
+                      :style="{ animationDelay: `${index * 0.08}s` }"
+                      class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{{ item.label }}</p>
+                      <p class="text-base font-bold text-gray-900">{{ item.value }}</p>
                     </div>
                   </div>
 
@@ -599,7 +611,7 @@
             </div>
 
             <div v-else-if="activeTab === TAB_IDS.DETAILS" class="space-y-6">
-              <div class="bg-white rounded-xl border border-gray-300 shadow-sm overflow-hidden">
+              <div :class="[...animations.cardClasses.value]" class="bg-white rounded-xl border border-gray-300 shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-gray-300">
                   <div class="flex items-center gap-3">
                     <div class="w-10 h-10 flex items-center justify-center">
@@ -689,7 +701,7 @@
             </div>
 
             <div v-else-if="activeTab === TAB_IDS.LOGS" class="space-y-6">
-              <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+              <div :class="[...animations.cardClasses.value]" class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-gray-50">
                   <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
@@ -732,7 +744,16 @@
                   <div v-else class="relative">
                     <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
                     <div class="space-y-6 pl-8">
-                      <div v-for="(activity, index) in auditLogs" :key="index" class="relative">
+                      <div
+                        v-for="(activity, index) in auditLogs"
+                        :key="index"
+                        :class="[
+                          'relative',
+                          ...animations.cardClasses.value,
+                          animations.getStaggeredDelayClass(index),
+                        ]"
+                        :style="{ animationDelay: `${index * 0.08}s` }"
+                      >
                         <div class="absolute -left-10 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-white shadow-sm" :class="activity.statusClass"></div>
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                           <div class="flex items-start justify-between gap-4">
@@ -751,7 +772,7 @@
             </div>
 
             <div v-else-if="activeTab === TAB_IDS.DOCUMENTS" class="space-y-6">
-              <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+              <div :class="[...animations.cardClasses.value]" class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="px-6 py-5 border-b border-gray-50">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
