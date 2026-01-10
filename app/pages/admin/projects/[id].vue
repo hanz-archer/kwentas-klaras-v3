@@ -3,12 +3,9 @@
     <AdminSidebar />
     
     <main class="flex-1 flex flex-col overflow-hidden">
-      <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
+      <div :class="[...animations.pageContainerClasses.value]" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
         <div class="max-w-7xl mx-auto">
-          <div v-if="loading" class="text-center py-12">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue"></div>
-            <p class="mt-4 text-gray-600">Loading project details...</p>
-          </div>
+          <ProjectDetailSkeleton v-if="showLoading" />
 
           <div v-else-if="error" class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-6">
             <div class="flex items-center">
@@ -819,6 +816,7 @@ import PieChart from '~/components/ui/PieChart.vue'
 import Accordion from '~/components/ui/Accordion.vue'
 import AddDisbursement from '~/components/projects/AddDisbursement.vue'
 import GeotagMap from '~/components/shared/GeotagMap.vue'
+import ProjectDetailSkeleton from '~/components/skeletons/admin/projects/ProjectDetailSkeleton.vue'
 import { useProjectDetail } from '~/composables/project/useProjectDetail'
 import { useProjectFinancials } from '~/composables/project/useProjectFinancials'
 import { useAdditionalBudgets } from '~/composables/additionalBudget/useAdditionalBudgets'
@@ -826,8 +824,11 @@ import { useObligations } from '~/composables/obligation/useObligations'
 import { useDisbursements } from '~/composables/disbursement/useDisbursements'
 import { TAB_IDS } from '~/constants/project/detailTabs'
 import { useUserPermissions } from '~/composables/user/useUserPermissions'
+import { useLoadingState } from '~/composables/ui/useLoadingState'
+import { usePageAnimations } from '~/composables/ui/usePageAnimations'
 
 const route = useRoute()
+const animations = usePageAnimations()
 const router = useRouter()
 const projectId = route.params.id as string
 const { canManageProjects } = useUserPermissions()
@@ -856,6 +857,8 @@ const {
   daysRemaining,
   exportLogsToExcel,
 } = useProjectDetail(projectId)
+
+const { showLoading, markAsLoaded } = useLoadingState(loading)
 
 // Use composables for CRUD operations
 const { 
@@ -1095,6 +1098,8 @@ watch(() => activeTab.value, (newTab) => {
 
 onMounted(async () => {
   await loadProject()
+  markAsLoaded()
+  animations.markPageLoaded()
   if (project.value?.id) {
     await loadFinancials()
   }

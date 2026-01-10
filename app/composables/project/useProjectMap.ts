@@ -1,4 +1,5 @@
 import { useErrorHandler } from '../error/useErrorHandler'
+import type { Project } from '~/types/project/project'
 
 export const useProjectMap = (projectId: string) => {
   const saving = ref(false)
@@ -11,7 +12,7 @@ export const useProjectMap = (projectId: string) => {
     error.value = null
 
     await useErrorHandler(async () => {
-      const response = await $fetch<{ success: boolean; project: any }>(`/api/projects/${projectId}/geotag`, {
+      const response = await $fetch<{ success: boolean; project: Project }>(`/api/projects/${projectId}/geotag`, {
         method: 'PATCH',
         body: {
           latitude: lat,
@@ -20,8 +21,8 @@ export const useProjectMap = (projectId: string) => {
       })
 
       if (response.success) {
-        latitude.value = response.project.latitude
-        longitude.value = response.project.longitude
+        latitude.value = response.project.latitude ?? null
+        longitude.value = response.project.longitude ?? null
       }
     }, {
       defaultMessage: 'Failed to update geotag',

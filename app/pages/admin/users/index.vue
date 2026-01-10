@@ -3,7 +3,7 @@
     <AdminSidebar />
     
     <main class="flex-1 flex flex-col overflow-hidden">
-      <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
+      <div :class="[...animations.pageContainerClasses.value]" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
         <div class="space-y-6 min-h-full flex flex-col">
           <div class="flex items-center justify-between">
             <div>
@@ -25,8 +25,14 @@
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
             <StatCard
+              v-if="!showLoading"
               v-for="(stat, index) in displayStats"
               :key="index"
+              :class="[
+                ...animations.statCardClasses.value,
+                animations.getStaggeredDelayClass(index),
+              ]"
+              :style="{ animationDelay: `${index * 0.1}s` }"
               :title="stat.title"
               :value="stat.value"
               :change="stat.change"
@@ -46,11 +52,23 @@
                 </svg>
               </template>
             </StatCard>
+            <div
+              v-else
+              v-for="n in 3"
+              :key="n"
+              class="bg-white border border-gray-200 rounded-xl p-6 animate-pulse"
+            >
+              <div class="h-4 bg-gray-200 rounded w-24 mb-4"></div>
+              <div class="h-8 bg-gray-200 rounded w-32 mb-2"></div>
+              <div class="h-3 bg-gray-200 rounded w-20"></div>
+            </div>
           </div>
 
           <section class="relative overflow-hidden rounded-2xl border border-gray-300 p-6 bg-white flex-1 min-h-[600px] flex flex-col">
 
-            <div v-if="filteredUsers.length === 0" class="text-center py-12 flex-1 flex items-center justify-center">
+            <UsersListSkeleton v-if="showLoading" />
+
+            <div v-else-if="filteredUsers.length === 0" class="text-center py-12 flex-1 flex items-center justify-center">
               <div class="text-gray-400 mb-2">
                 <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -62,8 +80,13 @@
 
             <div v-else class="space-y-3 flex-1">
               <div
-                v-for="user in filteredUsers"
+                v-for="(user, index) in filteredUsers"
                 :key="user.id"
+                :class="[
+                  'animate-card-fade-in',
+                  'will-change-all',
+                  animations.getStaggeredDelayClass(index, { maxItems: 10 }),
+                ]"
                 class="user-card bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-blue-300 transition-all duration-200"
               >
                 <div class="flex items-center gap-6">
@@ -101,7 +124,7 @@
               </div>
             </div>
 
-            <div v-if="filteredUsers.length > 0" class="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
+            <div v-if="!showLoading && filteredUsers.length > 0" class="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
               <div class="text-sm text-gray-600">
                 Showing <span class="font-bold text-gray-900">{{ filteredUsers.length }}</span> of <span class="font-bold text-gray-900">{{ users.length }}</span> users
               </div>
@@ -146,6 +169,7 @@ import StatCard from '~/components/ui/StatCard.vue'
 import SearchInput from '~/components/ui/SearchInput.vue'
 import ErrorMessage from '~/components/ui/ErrorMessage.vue'
 import ConfirmModal from '~/components/ui/ConfirmModal.vue'
+import UsersListSkeleton from '~/components/skeletons/admin/users/UsersListSkeleton.vue'
 import { getIconBgColor } from '~/constants/ui/statColors'
 import { MODAL_MESSAGES } from '~/constants/ui/modalMessages'
 import type { User } from '~/types/user/user'
@@ -153,10 +177,14 @@ import { useUsers } from '~/composables/user/useUsers'
 import { useUserSearch } from '~/composables/user/useUserSearch'
 import { useUserModal } from '~/composables/user/useUserModal'
 import { useUserPermissions } from '~/composables/user/useUserPermissions'
+import { useLoadingState } from '~/composables/ui/useLoadingState'
+import { usePageAnimations } from '~/composables/ui/usePageAnimations'
 
 const searchQuery = ref('')
+const animations = usePageAnimations()
 
-const { users, saveError, userStats, fetchUsers, handleDeleteUser } = useUsers()
+const { users, loading, saveError, userStats, fetchUsers, handleDeleteUser } = useUsers()
+const { showLoading, markAsLoaded } = useLoadingState(loading)
 const { filteredUsers } = useUserSearch(users, searchQuery)
 const {
   showEditConfirmModal,
@@ -184,6 +212,8 @@ const goToAddUser = () => {
 
 onMounted(async () => {
   await fetchUsers()
+  markAsLoaded()
+  animations.markPageLoaded()
 })
 </script>
 

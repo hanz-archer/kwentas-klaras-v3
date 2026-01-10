@@ -1,6 +1,6 @@
 import type { TableProps } from '~/types/ui/table'
 
-export const useTable = <T = any>(props: TableProps<T>) => {
+export const useTable = <T = Record<string, unknown>>(props: TableProps<T>) => {
   const hasData = computed(() => props.data.length > 0)
 
   const getColumnAlign = (align?: string) => {

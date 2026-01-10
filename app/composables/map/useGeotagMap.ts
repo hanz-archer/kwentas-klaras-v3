@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import type { LocationInfo, GeotagMapOptions } from '~/types/map/geotagMap'
+import type { Project } from '~/types/project/project'
 
 export const useGeotagMap = (options: GeotagMapOptions = {}) => {
   const currentLatitude = ref<number | null>(options.initialLatitude ?? null)
@@ -45,7 +46,7 @@ export const useGeotagMap = (options: GeotagMapOptions = {}) => {
         locationInfo.value.barangay = address.village || address.neighbourhood || address.suburb || null
         locationInfo.value.municipality = address.city || address.town || address.municipality || null
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       locationInfo.value.error = 'Unable to identify location'
       console.error('Reverse geocoding error:', err)
     } finally {
@@ -82,7 +83,7 @@ export const useGeotagMap = (options: GeotagMapOptions = {}) => {
     }
   }
 
-  const getDefaultIcon = (L: any) => {
+  const getDefaultIcon = (L: { icon: (options: { iconUrl: string; iconRetinaUrl: string; shadowUrl: string; iconSize: [number, number]; iconAnchor: [number, number]; popupAnchor: [number, number]; shadowSize: [number, number] }) => unknown }) => {
     return L.icon({
       iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
       iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -101,7 +102,7 @@ export const useGeotagMap = (options: GeotagMapOptions = {}) => {
     error.value = null
 
     try {
-      const response = await $fetch<{ success: boolean; project: any }>(`/api/projects/${options.projectId}/geotag`, {
+      const response = await $fetch<{ success: boolean; project: Project }>(`/api/projects/${options.projectId}/geotag`, {
         method: 'PATCH',
         body: {
           latitude: lat,
@@ -115,8 +116,9 @@ export const useGeotagMap = (options: GeotagMapOptions = {}) => {
       }
 
       return response
-    } catch (err: any) {
-      error.value = err?.message || 'Failed to save location'
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save location'
+      error.value = errorMessage
       return { success: false }
     } finally {
       saving.value = false
@@ -140,7 +142,7 @@ export const useGeotagMap = (options: GeotagMapOptions = {}) => {
     error.value = null
 
     try {
-      const response = await $fetch<{ success: boolean; project: any }>(`/api/projects/${options.projectId}/geotag`, {
+      const response = await $fetch<{ success: boolean; project: Project }>(`/api/projects/${options.projectId}/geotag`, {
         method: 'PATCH',
         body: {
           latitude: null,
@@ -160,8 +162,9 @@ export const useGeotagMap = (options: GeotagMapOptions = {}) => {
       }
 
       return response
-    } catch (err: any) {
-      error.value = err?.message || 'Failed to clear location'
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to clear location'
+      error.value = errorMessage
       return { success: false }
     } finally {
       saving.value = false

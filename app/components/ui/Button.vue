@@ -4,6 +4,7 @@
     :disabled="disabled || loading"
     :class="buttonClasses.classes"
     :style="buttonClasses.primaryStyle"
+    class="cursor-pointer"
   >
     <span v-if="loading" class="flex items-center">
       <svg

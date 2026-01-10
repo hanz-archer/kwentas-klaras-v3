@@ -1,6 +1,7 @@
 import type { Project } from '~/types/project/project'
 import type { AuditLog } from '~/types/project/auditLog'
 import type { ProjectActivity } from '~/types/project/projectActivity'
+import type { ProjectWithMetadata } from '~/types/project/projectDetail'
 import { useProjects } from './useProjects'
 import { useProjectFormatting } from './useProjectFormatting'
 import { useProjectTimeline } from './useProjectTimeline'
@@ -11,7 +12,11 @@ import * as XLSX from 'xlsx'
 import { stripHtmlTags } from '~/utils/htmlUtils'
 
 export const useProjectDetail = (projectId: string) => {
-  const { loading, error, fetchProject } = useProjects()
+  const { loading, error, fetchProject } = useProjects() as {
+    loading: Ref<boolean>
+    error: Ref<string | null>
+    fetchProject: (projectId: string) => Promise<Project | null>
+  }
   const { formatNumber, formatDate } = useProjectFormatting()
 
   const project = ref<Project | null>(null)
@@ -97,7 +102,7 @@ export const useProjectDetail = (projectId: string) => {
     if (!project.value) return []
 
     const logs: AuditLog[] = []
-    const projectData = project.value as any
+    const projectData = project.value as ProjectWithMetadata
 
     if (projectData.createdAt) {
       logs.push({
@@ -153,13 +158,14 @@ export const useProjectDetail = (projectId: string) => {
   })
 
   const loadProject = async () => {
-    if (projectId) {
-      project.value = await fetchProject(projectId)
-      const projectData = project.value as any
-      if (projectData?.id) {
-        await fetchActivities(projectData.id)
-      }
-    }
+    if (!projectId) return
+    
+    const fetchedProject = await fetchProject(projectId)
+    if (!fetchedProject || !fetchedProject.id) return
+    
+    const projectIdValue = fetchedProject.id
+    project.value = fetchedProject
+    await fetchActivities(projectIdValue)
   }
 
   const pieChartData = computed(() => {
@@ -249,9 +255,11 @@ export const useProjectDetail = (projectId: string) => {
       let dateTime = log.time
       if (activities.value.length > 0 && index < activities.value.length) {
         const activity = activities.value[index]
-        dateTime = formatDateTime(activity.createdAt)
+        if (activity) {
+          dateTime = formatDateTime(activity.createdAt)
+        }
       } else if (activities.value.length === 0 && project.value) {
-        const projectData = project.value as any
+        const projectData = project.value as ProjectWithMetadata
         if (projectData.createdAt) {
           dateTime = formatDateTime(projectData.createdAt)
         }

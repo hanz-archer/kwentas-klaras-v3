@@ -1,4 +1,5 @@
 import type { IAdditionalBudget } from '~/types/additionalBudget/additionalBudget'
+import type { BudgetStatus } from '~/constants/additionalBudget/status'
 
 export const useAdditionalBudgets = () => {
   const budgets = ref<IAdditionalBudget[]>([])
@@ -48,7 +49,7 @@ export const useAdditionalBudgets = () => {
     reason: string
     approvedBy?: string
     approvedDate?: Date
-    status?: 'pending' | 'approved' | 'rejected'
+    status?: BudgetStatus
   }) => {
     loading.value = true
     saveError.value = null

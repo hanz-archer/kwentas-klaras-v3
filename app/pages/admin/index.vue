@@ -3,7 +3,7 @@
     <AdminSidebar />
     
     <main class="flex-1 flex flex-col overflow-hidden">
-      <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
+      <div :class="[...animations.pageContainerClasses.value]" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
         <div class="space-y-8 min-h-screen">
           <PageHeader
             :title="PAGE_HEADERS.dashboard.title"
@@ -28,6 +28,11 @@
             <StatCard
               v-for="(stat, index) in stats"
               :key="index"
+              :class="[
+                ...animations.statCardClasses.value,
+                animations.getStaggeredDelayClass(index),
+              ]"
+              :style="{ animationDelay: `${index * 0.08}s` }"
               :title="stat.title"
               :value="stat.value"
               :change="`${stat.change} from last month`"
@@ -80,10 +85,12 @@ import { getStatIconColor, getIconBgColor } from '~/constants/ui/statColors'
 import { useDashboard } from '~/composables/dashboard/useDashboard'
 import { useUtilizationRate } from '~/composables/dashboard/useUtilizationRate'
 import { useUserPermissions } from '~/composables/user/useUserPermissions'
+import { usePageAnimations } from '~/composables/ui/usePageAnimations'
 
 const { activities, handleViewAll } = useDashboard()
 const { chartOptions, chartSeries } = useUtilizationRate()
 const { canManageProjects } = useUserPermissions()
+const animations = usePageAnimations()
 
 const dashboardButtonText = computed(() => {
   return canManageProjects.value ? PAGE_HEADERS.dashboard.buttonText : undefined
@@ -133,6 +140,10 @@ const headerStats = computed(() => {
     ...stat,
     iconIndex: index
   }))
+})
+
+onMounted(() => {
+  animations.markPageLoaded()
 })
 </script>
 

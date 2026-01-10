@@ -3,7 +3,7 @@
     <AdminSidebar />
     
     <main class="flex-1 flex flex-col overflow-hidden">
-      <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
+      <div :class="[...animations.pageContainerClasses.value]" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
         <div class="space-y-6 min-h-full flex flex-col">
           <div class="flex items-center justify-between">
             <div>
@@ -22,8 +22,14 @@
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
             <StatCard
+              v-if="!showLoading"
               v-for="(stat, index) in displayStats"
               :key="index"
+              :class="[
+                ...animations.statCardClasses.value,
+                animations.getStaggeredDelayClass(index),
+              ]"
+              :style="{ animationDelay: `${index * 0.1}s` }"
               :title="stat.title"
               :value="stat.value"
               :change="stat.change"
@@ -43,13 +49,20 @@
                 </svg>
               </template>
             </StatCard>
+            <div
+              v-else
+              v-for="n in 3"
+              :key="n"
+              class="bg-white border border-gray-200 rounded-xl p-6 animate-pulse"
+            >
+              <div class="h-4 bg-gray-200 rounded w-24 mb-4"></div>
+              <div class="h-8 bg-gray-200 rounded w-32 mb-2"></div>
+              <div class="h-3 bg-gray-200 rounded w-20"></div>
+            </div>
           </div>
 
           <section class="relative overflow-hidden rounded-2xl border border-gray-300 p-6 bg-white flex-1 min-h-[600px] flex flex-col">
-            <div v-if="loading" class="text-center py-12 flex-1 flex items-center justify-center">
-              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue"></div>
-              <p class="mt-4 text-gray-600">Loading payments...</p>
-            </div>
+            <PaymentTableSkeleton v-if="showLoading" />
 
             <div v-else-if="error" class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-6">
               <div class="flex items-center">
@@ -167,7 +180,7 @@
               </table>
             </div>
 
-            <div v-if="filteredPayments.length > 0" class="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
+            <div v-if="!showLoading && filteredPayments.length > 0" class="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
               <div class="text-sm text-gray-600">
                 Showing <span class="font-bold text-gray-900">{{ filteredPayments.length }}</span> of <span class="font-bold text-gray-900">{{ payments.length }}</span> payments
               </div>
@@ -182,14 +195,19 @@
 <script setup lang="ts">
 import StatCard from '~/components/ui/StatCard.vue'
 import SearchInput from '~/components/ui/SearchInput.vue'
+import PaymentTableSkeleton from '~/components/skeletons/admin/check-payment/PaymentTableSkeleton.vue'
 import { getIconBgColor } from '~/constants/ui/statColors'
 import { useProjectFormatting } from '~/composables/project/useProjectFormatting'
 import { useDisbursements } from '~/composables/disbursement/useDisbursements'
+import { useLoadingState } from '~/composables/ui/useLoadingState'
+import { usePageAnimations } from '~/composables/ui/usePageAnimations'
 
 const searchQuery = ref('')
+const animations = usePageAnimations()
 const { disbursements, loading, error, fetchDisbursements, updateStatus, saveError } = useDisbursements()
 const { formatNumber, formatDate } = useProjectFormatting()
 const updatingId = ref<string | null>(null)
+const { showLoading, markAsLoaded } = useLoadingState(loading)
 
 // Map disbursements to payments format for display
 const payments = computed(() => {
@@ -208,6 +226,8 @@ const payments = computed(() => {
 
 onMounted(async () => {
   await fetchDisbursements()
+  markAsLoaded()
+  animations.markPageLoaded()
 })
 
 const filteredPayments = computed(() => {

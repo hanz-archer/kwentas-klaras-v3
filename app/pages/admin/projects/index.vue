@@ -3,7 +3,7 @@
     <AdminSidebar />
     
     <main class="flex-1 flex flex-col overflow-hidden">
-      <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
+      <div :class="[...animations.pageContainerClasses.value]" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-brand-bg">
         <div class="space-y-6 min-h-full flex flex-col">
           <div class="flex items-center justify-between">
             <div>
@@ -60,8 +60,14 @@
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
             <StatCard
+              v-if="!loading"
               v-for="(stat, index) in displayStats"
                 :key="index"
+                :class="[
+                  ...animations.statCardClasses.value,
+                  animations.getStaggeredDelayClass(index),
+                ]"
+                :style="{ animationDelay: `${index * 0.1}s` }"
               :title="stat.title"
               :value="stat.value"
               :change="stat.change"
@@ -81,11 +87,23 @@
                   </svg>
               </template>
             </StatCard>
+            <div
+              v-else
+              v-for="n in 3"
+              :key="n"
+              class="bg-white border border-gray-200 rounded-xl p-6 animate-pulse"
+            >
+              <div class="h-4 bg-gray-200 rounded w-24 mb-4"></div>
+              <div class="h-8 bg-gray-200 rounded w-32 mb-2"></div>
+              <div class="h-3 bg-gray-200 rounded w-20"></div>
+            </div>
           </div>
 
           <section class="relative overflow-hidden rounded-2xl border border-gray-300 p-6 bg-white flex-1 min-h-[600px] flex flex-col">
 
-            <div v-if="filteredProjects.length === 0" class="text-center py-12 flex-1 flex items-center justify-center">
+            <ProjectsListSkeleton v-if="showLoading" />
+
+            <div v-else-if="filteredProjects.length === 0" class="text-center py-12 flex-1 flex items-center justify-center">
               <div class="text-gray-400 mb-2">
                 <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -95,10 +113,15 @@
               <p class="text-sm text-gray-500 mt-1">Try adjusting your search criteria.</p>
             </div>
 
-            <div v-else class="space-y-3 flex-1">
+            <TransitionGroup v-else name="list" tag="div" class="space-y-3 flex-1">
               <div
-                v-for="project in filteredProjects"
+                v-for="(project, index) in filteredProjects"
                 :key="project.id"
+                :class="[
+                  'animate-card-fade-in',
+                  'will-change-all',
+                  animations.getStaggeredDelayClass(index, { maxItems: 10 }),
+                ]"
                 class="project-card bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-blue-300 transition-all duration-200"
               >
                 <div class="flex items-center gap-6">
@@ -129,8 +152,6 @@
                           {{ formatDate(project.startDate) }} - {{ formatDate(project.endDate) }}
                         </span>
                       </div>
-                      
-                      <!-- Budget & Financial Information Section -->
                       <div class="mt-4 pt-4 border-t border-gray-100">
                         <button
                           @click.stop="toggleFinancialInfo(project.id!)"
@@ -253,9 +274,9 @@
                   </div>
                 </div>
               </div>
-            </div>
+            </TransitionGroup>
 
-            <div v-if="filteredProjects.length > 0" class="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
+            <div v-if="!loading && filteredProjects.length > 0" class="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between">
               <div class="text-sm text-gray-600">
                 Showing <span class="font-bold text-gray-900">{{ filteredProjects.length }}</span> of <span class="font-bold text-gray-900">{{ projects.length }}</span> projects
               </div>
@@ -285,21 +306,21 @@
       :is-open="isBudgetModalOpen"
       :project-id="selectedProjectId"
       @close="closeBudgetModal"
-      @save="handleSaveBudget"
+      @save="onSaveBudget"
     />
 
     <AddObligation
       :is-open="isObligationModalOpen"
       :project-id="selectedProjectId"
       @close="closeObligationModal"
-      @save="handleSaveObligation"
+      @save="onSaveObligation"
     />
 
     <AddDisbursement
       :is-open="isDisbursementModalOpen"
       :project-id="selectedProjectId"
       @close="closeDisbursementModal"
-      @save="handleSaveDisbursement"
+      @save="onSaveDisbursement"
     />
   </div>
 </template>
@@ -311,42 +332,73 @@ import ErrorMessage from '~/components/ui/ErrorMessage.vue'
 import AddAdditionalBudget from '~/components/projects/AddAdditionalBudget.vue'
 import AddObligation from '~/components/projects/AddObligation.vue'
 import AddDisbursement from '~/components/projects/AddDisbursement.vue'
+import ProjectsListSkeleton from '~/components/skeletons/admin/projects/ProjectsListSkeleton.vue'
 import { useProjects } from '~/composables/project/useProjects'
 import { useProjectSearch } from '~/composables/project/useProjectSearch'
 import { useProjectFormatting } from '~/composables/project/useProjectFormatting'
-import { useProjectFinancials } from '~/composables/project/useProjectFinancials'
+import { useProjectListActions } from '~/composables/project/useProjectListActions'
+import { useProjectListFinancials } from '~/composables/project/useProjectListFinancials'
 import { useAdditionalBudgets } from '~/composables/additionalBudget/useAdditionalBudgets'
 import { useObligations } from '~/composables/obligation/useObligations'
 import { useDisbursements } from '~/composables/disbursement/useDisbursements'
 import { PROJECT_FILTER_TYPES, type ProjectFilterType } from '~/constants/project/filterTypes'
 import { getIconBgColor } from '~/constants/ui/statColors'
 import { useUserPermissions } from '~/composables/user/useUserPermissions'
+import { useLoadingState } from '~/composables/ui/useLoadingState'
+import { usePageAnimations } from '~/composables/ui/usePageAnimations'
 
 const searchQuery = ref('')
 const filterType = ref<ProjectFilterType>(PROJECT_FILTER_TYPES.ALL)
-const openDropdownId = ref<string | null>(null)
-const isBudgetModalOpen = ref(false)
-const isObligationModalOpen = ref(false)
-const isDisbursementModalOpen = ref(false)
-const selectedProjectId = ref('')
-const expandedFinancialInfoId = ref<string | null>(null)
-const projectFinancialData = ref<Map<string, {
-  totalObligations: number
-  remainingObligations: number
-  totalDisbursements: number
-  approvedDisbursements: number
-  utilizationRate: number
-}>>(new Map())
 
-const { projects, saveError, fetchProjects, projectStats } = useProjects()
+const { projects, loading, saveError, fetchProjects, projectStats } = useProjects()
 const { canManageProjects } = useUserPermissions()
 const { createBudget, saveError: budgetSaveError } = useAdditionalBudgets()
 const { createObligation, saveError: obligationSaveError } = useObligations()
 const { createDisbursement, saveError: disbursementSaveError } = useDisbursements()
 
+const { showLoading, markAsLoaded } = useLoadingState(loading)
+const animations = usePageAnimations()
 const displayStats = computed(() => projectStats.value.slice(0, 3))
 const { filteredProjects: searchFilteredProjects } = useProjectSearch(projects, searchQuery)
 const { formatNumber, formatDate } = useProjectFormatting()
+
+const {
+  projectFinancialData,
+  hasFinancialData,
+  loadProjectFinancialData,
+  getProjectFinancialData,
+  getUtilizationRate,
+  getRemainingBalance,
+  formatUtilizationRate,
+} = useProjectListFinancials(projects)
+
+const {
+  openDropdownId,
+  isBudgetModalOpen,
+  isObligationModalOpen,
+  isDisbursementModalOpen,
+  selectedProjectId,
+  expandedFinancialInfoId,
+  goToProject,
+  goToAddProject,
+  toggleDropdown,
+  closeDropdown,
+  openAddBudgetModal,
+  closeBudgetModal,
+  openAddObligationModal,
+  closeObligationModal,
+  openAddDisbursementModal,
+  closeDisbursementModal,
+  toggleFinancialInfo: toggleFinancialInfoAction,
+  handleSaveBudget,
+  handleSaveObligation,
+  handleSaveDisbursement,
+  setupClickOutside,
+} = useProjectListActions(fetchProjects, loadProjectFinancialData)
+
+const toggleFinancialInfo = (projectId: string) => {
+  toggleFinancialInfoAction(projectId, hasFinancialData)
+}
 
 const filteredProjects = computed(() => {
   if (filterType.value === PROJECT_FILTER_TYPES.ALL) {
@@ -378,93 +430,21 @@ const filteredProjects = computed(() => {
 
 onMounted(async () => {
   await fetchProjects()
+  markAsLoaded()
+  animations.markPageLoaded()
+  setupClickOutside()
 })
 
-const router = useRouter()
-
-const goToProject = (project: any) => {
-  closeDropdown(project.id)
-  router.push(`/admin/projects/${project.id}`)
-}
-
-const goToAddProject = () => {
-  router.push('/admin/projects/add')
-}
-
-const toggleDropdown = (projectId: string) => {
-  openDropdownId.value = openDropdownId.value === projectId ? null : projectId
-}
-
-const closeDropdown = (projectId: string) => {
-  if (openDropdownId.value === projectId) {
-    openDropdownId.value = null
-  }
-}
-
-const openAddBudgetModal = (project: any) => {
-  selectedProjectId.value = project.id
-  isBudgetModalOpen.value = true
-  openDropdownId.value = null
-}
-
-const closeBudgetModal = () => {
-  isBudgetModalOpen.value = false
-  selectedProjectId.value = ''
-}
-
-const openAddObligationModal = (project: any) => {
-  selectedProjectId.value = project.id
-  isObligationModalOpen.value = true
-  openDropdownId.value = null
-}
-
-const closeObligationModal = () => {
-  isObligationModalOpen.value = false
-  selectedProjectId.value = ''
-}
-
-const openAddDisbursementModal = (project: any) => {
-  selectedProjectId.value = project.id
-  isDisbursementModalOpen.value = true
-  openDropdownId.value = null
-}
-
-const closeDisbursementModal = () => {
-  isDisbursementModalOpen.value = false
-  selectedProjectId.value = ''
-}
-
-const handleSaveBudget = async (budgetData: {
+const onSaveBudget = (budgetData: {
   projectId: string
   amount: number
   reason: string
   approvedBy?: string
   approvedDate?: string
   status?: string
-}) => {
-  try {
-    await createBudget({
-      projectId: budgetData.projectId,
-      amount: budgetData.amount,
-      reason: budgetData.reason,
-      approvedBy: budgetData.approvedBy,
-      approvedDate: budgetData.approvedDate ? new Date(budgetData.approvedDate) : undefined,
-      status: budgetData.status as 'pending' | 'approved' | 'rejected' | undefined,
-    })
-    closeBudgetModal()
-    // Refresh projects to update total added budget
-    await fetchProjects()
-    // Refresh financial data if it's currently expanded
-    if (expandedFinancialInfoId.value === budgetData.projectId) {
-      await loadProjectFinancialData(budgetData.projectId)
-    }
-  } catch (error) {
-    // Error is handled by the composable
-    console.error('Failed to save budget:', error)
-  }
-}
+}) => handleSaveBudget(budgetData, createBudget)
 
-const handleSaveObligation = async (obligationData: {
+const onSaveObligation = (obligationData: {
   projectId: string
   amount: number
   reason: string
@@ -472,140 +452,35 @@ const handleSaveObligation = async (obligationData: {
   approvedBy?: string
   approvedDate?: string
   status?: string
-}) => {
-  try {
-    await createObligation({
-      projectId: obligationData.projectId,
-      amount: obligationData.amount,
-      reason: obligationData.reason,
-      payee: obligationData.payee,
-      approvedBy: obligationData.approvedBy,
-      approvedDate: obligationData.approvedDate ? new Date(obligationData.approvedDate) : undefined,
-      status: obligationData.status as 'pending' | 'approved' | 'rejected' | undefined,
-    })
-    closeObligationModal()
-    // Refresh projects to update any obligation-related data
-    await fetchProjects()
-    // Refresh financial data if it's currently expanded
-    if (expandedFinancialInfoId.value === obligationData.projectId) {
-      await loadProjectFinancialData(obligationData.projectId)
-    }
-  } catch (error) {
-    // Error is handled by the composable
-    console.error('Failed to save obligation:', error)
-  }
-}
+}) => handleSaveObligation(obligationData, createObligation)
 
-const handleSaveDisbursement = async (disbursementData: {
+const onSaveDisbursement = (disbursementData: {
   projectId: string
   amount: number
   reason: string
   payee: string
   approvedBy?: string
   approvedDate?: string
-}) => {
-  try {
-    await createDisbursement({
-      projectId: disbursementData.projectId,
-      amount: disbursementData.amount,
-      reason: disbursementData.reason,
-      payee: disbursementData.payee,
-      approvedBy: disbursementData.approvedBy,
-      approvedDate: disbursementData.approvedDate ? new Date(disbursementData.approvedDate) : undefined,
-    })
-    closeDisbursementModal()
-    // Refresh projects to update any disbursement-related data
-    await fetchProjects()
-    // Refresh financial data if it's currently expanded
-    if (expandedFinancialInfoId.value === disbursementData.projectId) {
-      await loadProjectFinancialData(disbursementData.projectId)
-    }
-  } catch (error) {
-    // Error is handled by the composable
-    console.error('Failed to save disbursement:', error)
-  }
-}
-
-const toggleFinancialInfo = async (projectId: string) => {
-  if (expandedFinancialInfoId.value === projectId) {
-    expandedFinancialInfoId.value = null
-  } else {
-    expandedFinancialInfoId.value = projectId
-    // Load financial data if not already loaded
-    if (!projectFinancialData.value.has(projectId)) {
-      await loadProjectFinancialData(projectId)
-    }
-  }
-}
-
-const loadProjectFinancialData = async (projectId: string) => {
-  try {
-    const financials = useProjectFinancials(projectId)
-    await financials.loadFinancials()
-
-    // Find the project to get appropriation and totalAddedBudget
-    const project = projects.value.find(p => p.id === projectId) || null
-    const utilizationRate = financials.utilizationRate.value(project)
-
-    projectFinancialData.value.set(projectId, {
-      totalObligations: financials.totalObligations.value,
-      remainingObligations: financials.remainingObligations.value,
-      totalDisbursements: financials.totalDisbursements.value,
-      approvedDisbursements: financials.approvedDisbursements.value,
-      utilizationRate
-    })
-  } catch (error) {
-    console.error('Failed to load financial data:', error)
-  }
-}
-
-const getProjectFinancialData = (projectId: string) => {
-  return projectFinancialData.value.get(projectId) || {
-    totalObligations: 0,
-    remainingObligations: 0,
-    totalDisbursements: 0,
-    approvedDisbursements: 0,
-    utilizationRate: 0
-  }
-}
-
-const getUtilizationRate = (project: any) => {
-  const financialData = getProjectFinancialData(project.id)
-  if (financialData.utilizationRate > 0) {
-    return financialData.utilizationRate
-  }
-  // Fallback calculation if data not loaded yet
-  const totalBudget = project.appropriation + (project.totalAddedBudget || 0)
-  if (totalBudget === 0) return 0
-  return (financialData.approvedDisbursements / totalBudget) * 100
-}
-
-const getRemainingBalance = (project: any) => {
-  const totalBudget = project.appropriation + (project.totalAddedBudget || 0)
-  const financialData = getProjectFinancialData(project.id)
-  return totalBudget - financialData.totalDisbursements
-}
-
-const formatUtilizationRate = (rate: number) => {
-  if (rate === 0) return '0.00'
-  if (rate < 0.01) {
-    // For very small percentages, show more decimal places
-    return rate.toFixed(4)
-  }
-  return rate.toFixed(2)
-}
-
-// Close dropdown when clicking outside
-onMounted(() => {
-  const handleClickOutside = () => {
-    if (openDropdownId.value) {
-      openDropdownId.value = null
-    }
-  }
-  document.addEventListener('click', handleClickOutside)
-  
-  onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside)
-  })
-})
+}) => handleSaveDisbursement(disbursementData, createDisbursement)
 </script>
+
+<style scoped>
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.list-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.list-move {
+  transition: transform 0.3s ease;
+}
+</style>

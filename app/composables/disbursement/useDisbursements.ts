@@ -1,4 +1,5 @@
 import type { IDisbursement } from '~/types/disbursement/disbursement'
+import type { DisbursementStatus } from '~/constants/disbursement/status'
 
 export const useDisbursements = () => {
   const disbursements = ref<IDisbursement[]>([])
@@ -49,7 +50,7 @@ export const useDisbursements = () => {
     payee: string
     approvedBy?: string
     approvedDate?: Date
-    status?: 'pending' | 'approved' | 'denied'
+    status?: DisbursementStatus
   }) => {
     loading.value = true
     saveError.value = null
@@ -80,7 +81,7 @@ export const useDisbursements = () => {
 
   const updateStatus = async (
     id: string,
-    status: 'pending' | 'approved' | 'denied',
+    status: DisbursementStatus,
     approvedBy?: string,
     approvedDate?: Date
   ) => {

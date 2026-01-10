@@ -2,15 +2,18 @@ import { useAdditionalBudgets } from '../additionalBudget/useAdditionalBudgets'
 import { useObligations } from '../obligation/useObligations'
 import { useDisbursements } from '../disbursement/useDisbursements'
 import type { Project } from '~/types/project/project'
+import type { IAdditionalBudget } from '~/types/additionalBudget/additionalBudget'
+import type { IObligation } from '~/types/obligation/obligation'
+import type { IDisbursement } from '~/types/disbursement/disbursement'
 
 export const useProjectFinancials = (projectId: string | Ref<string | null>) => {
   const { fetchBudgetsByProject } = useAdditionalBudgets()
   const { fetchObligationsByProject } = useObligations()
   const { fetchDisbursementsByProject } = useDisbursements()
 
-  const additionalBudgets = ref<any[]>([])
-  const obligations = ref<any[]>([])
-  const disbursements = ref<any[]>([])
+  const additionalBudgets = ref<IAdditionalBudget[]>([])
+  const obligations = ref<IObligation[]>([])
+  const disbursements = ref<IDisbursement[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -31,8 +34,9 @@ export const useProjectFinancials = (projectId: string | Ref<string | null>) => 
       additionalBudgets.value = budgets
       obligations.value = obligationsList
       disbursements.value = disbursementsList
-    } catch (err: any) {
-      error.value = err?.message || 'Failed to load financial data'
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load financial data'
+      error.value = errorMessage
     } finally {
       loading.value = false
     }

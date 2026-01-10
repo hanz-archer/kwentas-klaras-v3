@@ -1,4 +1,5 @@
 import type { IObligation } from '~/types/obligation/obligation'
+import type { ObligationStatus } from '~/constants/obligation/status'
 
 export const useObligations = () => {
   const obligations = ref<IObligation[]>([])
@@ -49,7 +50,7 @@ export const useObligations = () => {
     payee: string
     approvedBy?: string
     approvedDate?: Date
-    status?: 'pending' | 'approved' | 'rejected'
+    status?: ObligationStatus
   }) => {
     loading.value = true
     saveError.value = null

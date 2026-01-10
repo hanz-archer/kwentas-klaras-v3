@@ -1,3 +1,5 @@
+import type { DisbursementStatus } from '~/constants/disbursement/status'
+
 export interface IDisbursement {
   id?: string
   projectId: string
@@ -7,7 +9,7 @@ export interface IDisbursement {
   payee: string
   approvedBy?: string
   approvedDate?: Date
-  status?: 'pending' | 'approved' | 'denied'
+  status?: DisbursementStatus
   createdAt?: Date
   updatedAt?: Date
 }

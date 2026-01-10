@@ -1,3 +1,5 @@
+import type { BudgetStatus } from '~/constants/additionalBudget/status'
+
 export interface IAdditionalBudget {
   id?: string
   projectId: string
@@ -5,7 +7,7 @@ export interface IAdditionalBudget {
   reason: string
   approvedBy?: string
   approvedDate?: Date | string
-  status?: 'pending' | 'approved' | 'rejected'
+  status?: BudgetStatus
   createdAt?: Date | string
   updatedAt?: Date | string
 }

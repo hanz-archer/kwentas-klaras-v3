@@ -9,6 +9,7 @@ export const useUsers = () => {
   const saveError = ref<string | null>(null)
 
   const users = computed(() => userStore.users.value)
+  const loading = computed(() => userStore.loading.value)
 
   const fetchUsers = async () => {
     await userStore.fetchUsers()
@@ -62,6 +63,7 @@ export const useUsers = () => {
 
   return {
     users: readonly(users),
+    loading: readonly(loading),
     saveError,
     userStats,
     fetchUsers,

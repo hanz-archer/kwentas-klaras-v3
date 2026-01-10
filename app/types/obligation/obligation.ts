@@ -1,3 +1,5 @@
+import type { ObligationStatus } from '~/constants/obligation/status'
+
 export interface IObligation {
   id?: string
   projectId: string
@@ -6,7 +8,7 @@ export interface IObligation {
   payee: string
   approvedBy?: string
   approvedDate?: Date
-  status?: 'pending' | 'approved' | 'rejected'
+  status?: ObligationStatus
   createdAt?: Date
   updatedAt?: Date
 }

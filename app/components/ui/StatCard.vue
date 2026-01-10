@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-300 animate-fade-in p-3">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-300 p-3">
     <div class="flex items-center justify-between mb-1.5">
       <h3 class="text-xs font-medium text-gray-500">{{ title }}</h3>
       <div v-if="icon" :class="`p-1.5 ${iconBgClasses} rounded-lg`">
