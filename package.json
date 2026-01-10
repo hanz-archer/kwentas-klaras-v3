@@ -49,7 +49,10 @@
   "devDependencies": {
     "@types/leaflet": "^1.9.21",
     "@types/node": "^24.10.4",
+    "@types/swagger-jsdoc": "^6.0.4",
     "dotenv": "^17.2.3",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-dist": "^5.31.0",
     "tsx": "^4.19.2"
   }
 }

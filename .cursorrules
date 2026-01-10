@@ -359,7 +359,52 @@ server/
 - **Single responsibility** - Each layer has one clear purpose
 - **No `any` types** - Always use proper TypeScript types
 
-### 12. Creating New Server-Side Feature Checklist
+### 12. API Documentation (Swagger)
+- **MANDATORY**: Whenever you add, update, or modify an API endpoint, you MUST update the Swagger documentation
+- **Location**: Swagger docs are in `server/docs/swagger/` directory
+- **File naming**: `[feature].docs.ts` (e.g., `users.docs.ts`, `projects.docs.ts`)
+- **Pattern**: Use JSDoc `@swagger` comments following OpenAPI 3.0.0 specification
+- **Required documentation**:
+  - Endpoint path and HTTP method
+  - Summary description
+  - Tags (matching the feature group)
+  - Request body schema (for POST/PUT)
+  - Path parameters (for dynamic routes)
+  - Query parameters (if applicable)
+  - Response schemas for all status codes (200, 400, 404, 500, etc.)
+  - Security requirements (if applicable)
+- **Swagger UI access**: Only available in `NODE_ENV=development` at `/api/api-docs`
+- **Swagger JSON spec**: Available at `/api/api-docs.json` (development only)
+- **When adding a new feature**: Create a new `[feature].docs.ts` file in `server/docs/swagger/` and import it in `server/docs/swagger/index.ts`
+- **When updating an existing API**: Update the corresponding `[feature].docs.ts` file with the new request/response schemas
+
+**Example Swagger documentation**:
+```typescript
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: Get all users
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: List of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ */
+```
+
+### 13. Creating New Server-Side Feature Checklist
 - [ ] Add Prisma model to `prisma/schema.prisma`
 - [ ] Create repository interface in `server/interfaces/repositories/I[Feature]Repository.ts`
 - [ ] Create repository implementation in `server/repositories/[feature]/[Feature]Repository.ts`
@@ -367,6 +412,8 @@ server/
 - [ ] Create service in `server/services/[feature]/[Feature]Service.ts`
 - [ ] Create types in `server/types/[feature]/[typeName].ts`
 - [ ] Create API endpoints in `server/api/[feature]/[method].[http].ts`
+- [ ] **Create or update Swagger documentation in `server/docs/swagger/[feature].docs.ts`** ⚠️ MANDATORY
+- [ ] **Import new Swagger docs in `server/docs/swagger/index.ts`** (if new feature)
 - [ ] Create constants if needed in `server/constants/[feature]/[constantName].ts`
 - [ ] Run `npx prisma generate` and `npx prisma db push`
 
@@ -389,6 +436,8 @@ server/
 - [ ] Service created with business logic (`server/services/[feature]/[Feature]Service.ts`)
 - [ ] Serializer created for data transformation (`server/serializers/[Feature]Serializer.ts`)
 - [ ] API endpoints created (`server/api/[feature]/[method].[http].ts`)
+- [ ] **Swagger documentation created/updated** (`server/docs/swagger/[feature].docs.ts`) ⚠️ MANDATORY
+- [ ] **Swagger docs imported in `server/docs/swagger/index.ts`** (if new feature) ⚠️ MANDATORY
 - [ ] Types created for requests/responses (`server/types/[feature]/[typeName].ts`)
 - [ ] Constants created if needed (`server/constants/[feature]/[constantName].ts`)
 - [ ] Error handling implemented with `withErrorHandler`
