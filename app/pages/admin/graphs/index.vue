@@ -24,14 +24,14 @@
                 Deselect All
               </button>
               <button
-                @click="exportSelectedGraphs"
+                @click="handleExportSelectedClick"
                 :disabled="isExporting || selectedGraphsCount === 0"
                 class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ isExporting ? 'Exporting...' : `Export Selected (${selectedGraphsCount})` }}
               </button>
               <button
-                @click="exportAllGraphs"
+                @click="handleExportAllClick"
                 :disabled="isExporting"
                 class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -225,16 +225,44 @@
         </div>
       </div>
     </main>
+
+    <ConfirmModal
+      :is-open="showConfirmationModal"
+      :title="exportMode === 'selected' ? MODAL_MESSAGES.EXPORT_SELECTED_GRAPHS.title : MODAL_MESSAGES.EXPORT_ALL_GRAPHS.title"
+      :message="exportMode === 'selected' ? MODAL_MESSAGES.EXPORT_SELECTED_GRAPHS.message : MODAL_MESSAGES.EXPORT_ALL_GRAPHS.message"
+      :confirm-text="exportMode === 'selected' ? MODAL_MESSAGES.EXPORT_SELECTED_GRAPHS.confirmText : MODAL_MESSAGES.EXPORT_ALL_GRAPHS.confirmText"
+      :cancel-text="exportMode === 'selected' ? MODAL_MESSAGES.EXPORT_SELECTED_GRAPHS.cancelText : MODAL_MESSAGES.EXPORT_ALL_GRAPHS.cancelText"
+      :loading="false"
+      @confirm="onConfirmExport"
+      @cancel="closeConfirmModal"
+    />
+
+    <LoadingModal
+      :show="showLoadingModal"
+      title="Generating Report"
+      :message="exportMessage || 'Please wait while we generate the report...'"
+    />
+    <SuccessModal
+      :show="showSuccessModal"
+      title="Export Successful"
+      message="Graphs & Analytics report has been generated and downloaded successfully."
+      @close="handleSuccessClose"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import BaseChart from '~/components/charts/BaseChart.vue'
+import ConfirmModal from '~/components/ui/ConfirmModal.vue'
+import LoadingModal from '~/components/ui/LoadingModal.vue'
+import SuccessModal from '~/components/ui/SuccessModal.vue'
 import { useGraphsPage } from '~/composables/graphs/useGraphsPage'
 import { useGraphsCharts } from '~/composables/graphs/useGraphsCharts'
 import { useGraphsExport } from '~/composables/graphs/useGraphsExport'
+import { useFormModals } from '~/composables/ui/useFormModals'
 import { usePageAnimations } from '~/composables/ui/usePageAnimations'
-import { onMounted } from 'vue'
+import { MODAL_MESSAGES } from '~/constants/ui/modalMessages'
+import { onMounted, ref } from 'vue'
 
 const {
   activeSection,
@@ -268,14 +296,66 @@ const {
 
 const {
   isExporting,
+  exportMessage,
   selectedGraphs,
   selectedGraphsCount,
   toggleGraphSelection,
   selectAllGraphs,
   deselectAllGraphs,
-  exportSelectedGraphs,
-  exportAllGraphs,
+  exportSelectedGraphs: exportSelectedGraphsBase,
+  exportAllGraphs: exportAllGraphsBase,
 } = useGraphsExport()
+
+const {
+  showConfirmationModal,
+  showLoadingModal,
+  showSuccessModal,
+  openConfirmModal,
+  closeConfirmModal,
+  closeSuccessModal,
+} = useFormModals()
+
+const exportMode = ref<'selected' | 'all' | null>(null)
+
+const handleExportSelectedClick = () => {
+  if (selectedGraphsCount.value === 0) return
+  exportMode.value = 'selected'
+  openConfirmModal()
+}
+
+const handleExportAllClick = () => {
+  exportMode.value = 'all'
+  openConfirmModal()
+}
+
+const onConfirmExport = async () => {
+  closeConfirmModal()
+  showLoadingModal.value = true
+  try {
+    if (exportMode.value === 'selected') {
+      await exportSelectedGraphsBase(() => {
+        showLoadingModal.value = false
+        showSuccessModal.value = true
+      })
+    } else if (exportMode.value === 'all') {
+      await exportAllGraphsBase(showSection, () => {
+        showLoadingModal.value = false
+        showSuccessModal.value = true
+      })
+      return
+    }
+    showLoadingModal.value = false
+    showSuccessModal.value = true
+  } catch (error) {
+    showLoadingModal.value = false
+    console.error('Error exporting graphs:', error)
+  }
+}
+
+const handleSuccessClose = () => {
+  closeSuccessModal()
+  exportMode.value = null
+}
 
 const animations = usePageAnimations()
 

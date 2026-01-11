@@ -3,6 +3,7 @@ import { GRAPH_SECTIONS, type GraphSection } from './useGraphsPage'
 
 export const useGraphsExport = () => {
   const isExporting = ref(false)
+  const exportMessage = ref<string>('')
   const selectedGraphs = ref<Set<GraphSection>>(new Set())
 
   const toggleGraphSelection = (section: GraphSection) => {
@@ -69,7 +70,7 @@ export const useGraphsExport = () => {
     }
   }
 
-  const exportSelectedGraphs = async () => {
+  const exportSelectedGraphs = async (onSuccess?: () => void) => {
     if (selectedGraphs.value.size === 0) return
 
     isExporting.value = true
@@ -78,21 +79,39 @@ export const useGraphsExport = () => {
         await exportGraph(section)
         await new Promise(resolve => setTimeout(resolve, 300))
       }
+      if (onSuccess) {
+        onSuccess()
+      }
     } finally {
       isExporting.value = false
     }
   }
 
-  const exportAllGraphs = async () => {
+  const exportAllGraphs = async (showSectionFn?: (section: GraphSection) => void, onSuccess?: () => void) => {
     isExporting.value = true
+    exportMessage.value = 'Generating report...'
     try {
       const allSections = Object.values(GRAPH_SECTIONS)
       const images: { dataURI: string; section: GraphSection }[] = []
+      const sectionNames: Record<GraphSection, string> = {
+        [GRAPH_SECTIONS.UTILIZATION]: 'Utilization Rate',
+        [GRAPH_SECTIONS.SPENT]: 'Spent',
+        [GRAPH_SECTIONS.COMPARISON]: 'Comparison',
+        [GRAPH_SECTIONS.DEPARTMENT]: 'Department',
+      }
 
       for (const section of allSections) {
-        await new Promise(resolve => setTimeout(resolve, 100))
+        if (showSectionFn) {
+          exportMessage.value = `Generating report... (${sectionNames[section]})`
+          showSectionFn(section)
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 200))
         const chartElement = document.querySelector(`[data-graph-section="${section}"]`)
-        if (!chartElement) continue
+        if (!chartElement) {
+          continue
+        }
 
         const chartInstance = (chartElement as any).__apexcharts
         if (chartInstance && typeof chartInstance.dataURI === 'function') {
@@ -120,16 +139,27 @@ export const useGraphsExport = () => {
         }
       }
 
+      exportMessage.value = 'Fetching projects data...'
       const projectsResponse = await $fetch<{ success: boolean; projects: any[] }>('/api/projects/reports')
       const projects = projectsResponse.success ? projectsResponse.projects : []
 
       if (images.length > 0) {
+        exportMessage.value = 'Creating PDF...'
         await generatePDFReport(images, projects)
+        isExporting.value = false
+        exportMessage.value = ''
+        if (onSuccess) {
+          onSuccess()
+        }
+      } else {
+        isExporting.value = false
+        exportMessage.value = ''
       }
     } catch (error) {
       console.error('Error exporting all graphs:', error)
-    } finally {
       isExporting.value = false
+      exportMessage.value = ''
+      throw error
     }
   }
 
@@ -254,8 +284,8 @@ export const useGraphsExport = () => {
 
         const name = (project.name || '').substring(0, 30)
         const location = (project.location || '').substring(0, 25)
-        const totalBudget = project.totalBudget ? `₱${formatNumber(project.totalBudget)}` : '₱0'
-        const disbursements = project.totalDisbursements ? `₱${formatNumber(project.totalDisbursements)}` : '₱0'
+        const totalBudget = project.totalBudget !== undefined && project.totalBudget !== null ? `PHP ${formatNumber(project.totalBudget)}` : 'PHP 0'
+        const disbursements = project.totalDisbursements !== undefined && project.totalDisbursements !== null ? `PHP ${formatNumber(project.totalDisbursements)}` : 'PHP 0'
         const utilization = project.utilizationRate !== undefined && project.utilizationRate !== null ? `${project.utilizationRate.toFixed(2)}%` : '0.00%'
 
         const x0 = colX[0]
@@ -285,6 +315,7 @@ export const useGraphsExport = () => {
 
   return {
     isExporting,
+    exportMessage,
     selectedGraphs,
     selectedGraphsCount,
     toggleGraphSelection,

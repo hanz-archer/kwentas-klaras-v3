@@ -71,6 +71,20 @@ export const MODAL_MESSAGES = {
     cancelText: 'Cancel',
     loadingText: 'Clearing...',
   },
+  EXPORT_SELECTED_GRAPHS: {
+    title: 'Export Selected Graphs',
+    message: 'Are you sure you want to export the selected graphs? This will download the graphs as images.',
+    confirmText: 'Export',
+    cancelText: 'Cancel',
+    loadingText: 'Exporting...',
+  },
+  EXPORT_ALL_GRAPHS: {
+    title: 'Export All Graphs',
+    message: 'Are you sure you want to export all graphs? This will generate a PDF report with all charts and project data.',
+    confirmText: 'Export All',
+    cancelText: 'Cancel',
+    loadingText: 'Exporting...',
+  },
   DEFAULT: {
     title: 'Confirm Action',
     message: 'Are you sure you want to proceed?',
