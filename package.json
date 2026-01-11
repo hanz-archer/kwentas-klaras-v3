@@ -36,6 +36,7 @@
     "exceljs": "^4.4.0",
     "firebase": "^12.6.0",
     "firebase-admin": "^13.6.0",
+    "jspdf": "^4.0.0",
     "leaflet": "^1.9.4",
     "mongodb": "^7.0.0",
     "nuxt": "^4.2.1",
