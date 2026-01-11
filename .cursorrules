@@ -214,7 +214,56 @@ const exportLogsToExcel = async () => {
 }
 ```
 
-### 14. Example: Form Composable Structure
+### 14. Skeleton Loaders
+- **MANDATORY**: All new pages MUST use skeleton loaders instead of spinner/loader components for loading states
+- **Location**: Skeleton components should be placed in `app/components/skeletons/[category]/[Feature]Skeleton.vue`
+- **Pattern**: 
+  - Create a skeleton component that mirrors the structure of the actual content
+  - Use Tailwind's `animate-pulse` class for the loading animation
+  - Use gray background colors (`bg-gray-200`, `bg-gray-300`) for skeleton elements
+  - Match the layout and spacing of the actual content
+  - Accept a `count` prop for list items (with default value)
+
+**Example**:
+```vue
+<template>
+  <div class="space-y-3">
+    <div
+      v-for="n in count"
+      :key="n"
+      class="bg-white border border-gray-200 rounded-xl p-5 animate-pulse"
+    >
+      <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+      <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+withDefaults(defineProps<{
+  count?: number
+}>(), {
+  count: 5
+})
+</script>
+```
+
+**Usage in pages**:
+```vue
+<template>
+  <div>
+    <FeatureSkeleton v-if="loading" />
+    <div v-else>
+      <!-- Actual content -->
+    </div>
+  </div>
+</template>
+```
+
+- **Purpose**: Provide better UX by showing content structure while loading, rather than generic spinners
+- **Examples**: `ProjectsListSkeleton`, `UsersListSkeleton`, `ReportsTableSkeleton`
+
+### 15. Example: Form Composable Structure
 ```typescript
 // types/budget/budgetForm.ts
 export interface BudgetFormData {
