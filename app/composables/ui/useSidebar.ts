@@ -1,5 +1,8 @@
 import { useSidebarStore } from '~/stores/sidebarStore'
 import type { AdminMenuItem } from '~/types/admin/menu'
+import { clearAllStorage } from '~/utils/storageCleanup'
+import { useAuthStore } from '~/stores/authStore'
+import { useFirebase } from '~/composables/firebase/useFirebase'
 
 export function useSidebar(menuItems: AdminMenuItem[]) {
   const route = useRoute()
@@ -39,6 +42,20 @@ export function useSidebar(menuItems: AdminMenuItem[]) {
   }
 
   const handleLogout = async () => {
+    try {
+      await $fetch('/api/auth/logout', { method: 'POST' })
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+
+    const authStore = useAuthStore()
+    authStore.clearUser()
+
+    clearAllStorage()
+
+    const { logout: firebaseLogout } = useFirebase()
+    await firebaseLogout()
+
     await navigateTo('/auth/login')
   }
 

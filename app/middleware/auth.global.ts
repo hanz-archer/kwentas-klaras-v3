@@ -5,8 +5,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return
   }
 
+  if (!to.path.startsWith('/admin')) {
+    return
+  }
+
   if (process.server) {
-    if (to.path.startsWith('/admin')) {
+    const sessionToken = useCookie('session_token')
+    if (!sessionToken.value) {
       return navigateTo('/auth/login', { replace: true })
     }
     return
@@ -14,7 +19,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const authStore = useAuthStore()
 
-  if (to.path.startsWith('/admin')) {
+  if (!authStore.isAuthenticated) {
+    await nextTick()
+    
     if (!authStore.isAuthenticated) {
       return navigateTo('/auth/login', { replace: true })
     }
