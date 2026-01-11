@@ -10,34 +10,34 @@
               <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Graphs & Analytics</h1>
               <p class="text-sm text-gray-500">Visual insights and project analytics</p>
             </div>
-            <div class="flex items-center gap-2">
-              <button
-                @click="selectAllGraphs"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Select All
-              </button>
-              <button
-                @click="deselectAllGraphs"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Deselect All
-              </button>
-              <button
-                @click="handleExportSelectedClick"
-                :disabled="isExporting || selectedGraphsCount === 0"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ isExporting ? 'Exporting...' : `Export Selected (${selectedGraphsCount})` }}
-              </button>
-              <button
-                @click="handleExportAllClick"
-                :disabled="isExporting"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ isExporting ? 'Exporting...' : 'Export All' }}
-              </button>
-            </div>
+                  <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
+                    <button
+                      @click="selectAllGraphs"
+                      class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Select All
+                    </button>
+                    <button
+                      @click="deselectAllGraphs"
+                      class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Deselect All
+                    </button>
+                    <button
+                      @click="handleExportSelectedClick"
+                      :disabled="isExporting || selectedGraphsCount === 0"
+                      class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {{ isExporting ? 'Exporting...' : `Export Selected (${selectedGraphsCount})` }}
+                    </button>
+                    <button
+                      @click="handleExportAllClick"
+                      :disabled="isExporting"
+                      class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {{ isExporting ? 'Exporting...' : 'Export All' }}
+                    </button>
+                  </div>
           </div>
 
           <div class="flex items-center gap-2 bg-gray-100 p-1 rounded-lg overflow-x-auto">
@@ -107,7 +107,7 @@
             </button>
           </div>
 
-          <div v-if="activeSection === GRAPH_SECTIONS.UTILIZATION" class="flex items-center gap-4 mb-4">
+          <div v-if="activeSection === GRAPH_SECTIONS.UTILIZATION" class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4">
             <label class="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -136,8 +136,8 @@
             </template>
           </BaseChart>
 
-          <div v-if="activeSection === GRAPH_SECTIONS.SPENT" class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-4">
+          <div v-if="activeSection === GRAPH_SECTIONS.SPENT" class="flex flex-col gap-3 mb-4">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
               <label class="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -151,7 +151,7 @@
             </div>
             <button
               @click="toggleSpentView"
-              class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+              class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors w-full sm:w-auto self-start"
             >
               Switch to {{ spentView === 'monthly' ? 'Daily' : 'Monthly' }} View
             </button>
@@ -173,7 +173,7 @@
             </template>
           </BaseChart>
 
-          <div v-if="activeSection === GRAPH_SECTIONS.COMPARISON" class="flex items-center gap-4 mb-4">
+          <div v-if="activeSection === GRAPH_SECTIONS.COMPARISON" class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4">
             <label class="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -202,7 +202,7 @@
             </template>
           </BaseChart>
 
-          <div v-if="activeSection === GRAPH_SECTIONS.DEPARTMENT" class="flex items-center gap-4 mb-4">
+          <div v-if="activeSection === GRAPH_SECTIONS.DEPARTMENT" class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4">
             <label class="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"

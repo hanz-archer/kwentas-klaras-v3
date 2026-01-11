@@ -130,43 +130,49 @@
                   'will-change-all',
                   animations.getStaggeredDelayClass(index, { maxItems: 10 }),
                 ]"
-                class="project-card bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-blue-300 transition-all duration-200"
+                class="project-card bg-white border border-gray-200 rounded-xl p-4 sm:p-5 hover:shadow-md hover:border-blue-300 transition-all duration-200"
               >
-                <div class="flex items-center gap-6">
-                  <div class="flex items-start gap-4 flex-1 min-w-0">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+                  <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
                     <div class="flex-shrink-0">
-                      <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
                     <div class="min-w-0 flex-1">
-                      <div class="flex items-center gap-3 mb-2">
-                        <h3 class="text-lg font-bold text-gray-900 truncate">{{ project.name }}</h3>
-                        <span v-if="project.code" class="px-2 py-0.5 inline-flex text-xs font-semibold rounded-full bg-gray-100 text-gray-700">
+                      <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-1">
+                        <h3 class="text-base sm:text-lg font-bold text-gray-900 truncate">{{ project.name }}</h3>
+                        <span v-if="project.code" class="px-2 py-0.5 inline-flex text-xs font-semibold rounded-full bg-gray-100 text-gray-700 self-start">
                           {{ project.code }}
                         </span>
                       </div>
-                      <div class="flex items-center gap-4 flex-wrap">
-                        <span v-if="project.implementingUnit" class="inline-flex text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-                          {{ project.implementingUnit }}
-                        </span>
-                        <span v-if="project.location" class="text-sm text-gray-600">{{ project.location }}</span>
+                      <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <span v-if="project.implementingUnit" class="inline-flex text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                            {{ project.implementingUnit }}
+                          </span>
+                          <span v-if="project.location" class="text-sm text-gray-600 truncate">{{ project.location }}</span>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <span v-if="project.year" class="text-xs text-gray-400">{{ project.year }}</span>
+                          <span v-if="project.startDate || project.endDate" class="text-xs text-gray-500">
+                            {{ formatDate(project.startDate) }} - {{ formatDate(project.endDate) }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="mt-1 flex items-center gap-2 flex-wrap">
                         <span class="text-sm font-bold text-gray-900">₱{{ formatNumber(project.appropriation) }}</span>
                         <span v-if="project.totalAddedBudget && project.totalAddedBudget > 0" class="text-sm font-semibold text-green-600">
                           +₱{{ formatNumber(project.totalAddedBudget) }} added
-                        </span>
-                        <span class="text-xs text-gray-500">{{ project.year }}</span>
-                        <span v-if="project.startDate || project.endDate" class="text-xs text-gray-500">
-                          {{ formatDate(project.startDate) }} - {{ formatDate(project.endDate) }}
                         </span>
                       </div>
                       <div class="mt-4 pt-4 border-t border-gray-100">
                         <button
                           @click.stop="toggleFinancialInfo(project.id!)"
-                          class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                          class="flex items-center justify-start gap-1.5 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors w-full text-left pl-0"
                         >
                           <svg 
-                            class="w-4 h-4 transition-transform"
+                            class="w-3 h-3 transition-transform flex-shrink-0"
                             :class="{ 'rotate-90': expandedFinancialInfoId === project.id }"
                             fill="none" 
                             stroke="currentColor" 
@@ -174,46 +180,46 @@
                           >
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                           </svg>
-                          Budget & Financial Information
+                          <span>Budget & Financial Information</span>
                         </button>
                         
                         <div 
                           v-if="expandedFinancialInfoId === project.id"
-                          class="mt-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
+                          class="mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3"
                         >
-                          <div class="bg-gray-50 rounded-lg p-3">
+                          <div class="bg-gray-50 rounded-lg p-2.5 sm:p-3">
                             <p class="text-xs font-medium text-gray-500 mb-1">Total Budget</p>
-                            <p class="text-sm font-bold text-gray-900">₱{{ formatNumber(project.appropriation) }}</p>
+                            <p class="text-sm font-bold text-gray-900 break-words">₱{{ formatNumber(project.appropriation) }}</p>
                           </div>
-                          <div class="bg-gray-50 rounded-lg p-3">
+                          <div class="bg-gray-50 rounded-lg p-2.5 sm:p-3">
                             <p class="text-xs font-medium text-gray-500 mb-1">Added Budget</p>
-                            <p class="text-sm font-bold text-gray-900">₱{{ formatNumber(project.totalAddedBudget || 0) }}</p>
+                            <p class="text-sm font-bold text-gray-900 break-words">₱{{ formatNumber(project.totalAddedBudget || 0) }}</p>
                           </div>
-                          <div class="bg-gray-50 rounded-lg p-3">
+                          <div class="bg-gray-50 rounded-lg p-2.5 sm:p-3">
                             <p class="text-xs font-medium text-gray-500 mb-1">Remaining Balance</p>
-                            <p class="text-sm font-bold" :class="getRemainingBalance(project) >= 0 ? 'text-green-600' : 'text-red-600'">
+                            <p class="text-sm font-bold break-words" :class="getRemainingBalance(project) >= 0 ? 'text-green-600' : 'text-red-600'">
                               ₱{{ formatNumber(getRemainingBalance(project)) }}
                             </p>
                           </div>
-                          <div class="bg-gray-50 rounded-lg p-3">
+                          <div class="bg-gray-50 rounded-lg p-2.5 sm:p-3">
                             <p class="text-xs font-medium text-gray-500 mb-1">Total Obligations</p>
-                            <p class="text-sm font-bold text-gray-900">₱{{ formatNumber(getProjectFinancialData(project.id!)?.totalObligations || 0) }}</p>
+                            <p class="text-sm font-bold text-gray-900 break-words">₱{{ formatNumber(getProjectFinancialData(project.id!)?.totalObligations || 0) }}</p>
                           </div>
-                          <div class="bg-gray-50 rounded-lg p-3">
+                          <div class="bg-gray-50 rounded-lg p-2.5 sm:p-3">
                             <p class="text-xs font-medium text-gray-500 mb-1">Remaining Obligations</p>
-                            <p class="text-sm font-bold text-orange-600">₱{{ formatNumber(getProjectFinancialData(project.id!)?.remainingObligations || 0) }}</p>
+                            <p class="text-sm font-bold text-orange-600 break-words">₱{{ formatNumber(getProjectFinancialData(project.id!)?.remainingObligations || 0) }}</p>
                           </div>
-                          <div class="bg-gray-50 rounded-lg p-3">
+                          <div class="bg-gray-50 rounded-lg p-2.5 sm:p-3">
                             <p class="text-xs font-medium text-gray-500 mb-1">Total Disbursements</p>
-                            <p class="text-sm font-bold text-gray-900">₱{{ formatNumber(getProjectFinancialData(project.id!)?.totalDisbursements || 0) }}</p>
+                            <p class="text-sm font-bold text-gray-900 break-words">₱{{ formatNumber(getProjectFinancialData(project.id!)?.totalDisbursements || 0) }}</p>
                           </div>
-                          <div class="bg-gray-50 rounded-lg p-3">
+                          <div class="bg-gray-50 rounded-lg p-2.5 sm:p-3">
                             <p class="text-xs font-medium text-gray-500 mb-1">Approved Disbursements</p>
-                            <p class="text-sm font-bold text-green-600">₱{{ formatNumber(getProjectFinancialData(project.id!)?.approvedDisbursements || 0) }}</p>
+                            <p class="text-sm font-bold text-green-600 break-words">₱{{ formatNumber(getProjectFinancialData(project.id!)?.approvedDisbursements || 0) }}</p>
                           </div>
-                          <div class="bg-gray-50 rounded-lg p-3">
+                          <div class="bg-gray-50 rounded-lg p-2.5 sm:p-3">
                             <p class="text-xs font-medium text-gray-500 mb-1">Utilization Rate</p>
-                            <p class="text-sm font-bold" :class="getUtilizationRate(project) >= 100 ? 'text-red-600' : getUtilizationRate(project) >= 80 ? 'text-yellow-600' : 'text-green-600'">
+                            <p class="text-sm font-bold break-words" :class="getUtilizationRate(project) >= 100 ? 'text-red-600' : getUtilizationRate(project) >= 80 ? 'text-yellow-600' : 'text-green-600'">
                               {{ formatUtilizationRate(getUtilizationRate(project)) }}%
                             </p>
                           </div>
@@ -221,8 +227,8 @@
                       </div>
                     </div>
                   </div>
-                  <div class="flex items-center gap-2 flex-shrink-0">
-                    <button @click.stop="goToProject(project)" class="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                  <div class="flex items-center gap-2 flex-shrink-0 self-start sm:self-center">
+                    <button @click.stop="goToProject(project)" class="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm w-full sm:w-auto">
                       View Project
                     </button>
                   </div>
