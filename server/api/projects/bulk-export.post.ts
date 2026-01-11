@@ -115,6 +115,16 @@ export default defineEventHandler(async (event) => {
       cell.numFmt = 'mm/dd/yyyy'
     }
 
+    const setCurrencyCell = (cell: ExcelJS.Cell, value: number | null | undefined) => {
+      if (value === null || value === undefined) {
+        cell.value = 0
+        cell.numFmt = '₱#,##0.00'
+        return
+      }
+      cell.value = value
+      cell.numFmt = '₱#,##0.00'
+    }
+
     Object.keys(serviceGroups).forEach(category => {
       const projects = serviceGroups[category]
       
@@ -127,11 +137,11 @@ export default defineEventHandler(async (event) => {
         
         row.getCell('A').value = project.name || ''
         row.getCell('B').value = project.location || ''
-        row.getCell('C').value = project.totalBudget || 0
+        setCurrencyCell(row.getCell('C'), project.totalBudget)
         setDateCell(row.getCell('D'), project.startDate)
         setDateCell(row.getCell('E'), project.endDate)
         row.getCell('F').value = project.utilizationRate ? `${project.utilizationRate.toFixed(2)}%` : '0%'
-        row.getCell('G').value = project.totalDisbursements || 0
+        setCurrencyCell(row.getCell('G'), project.totalDisbursements)
         row.getCell('I').value = project.remarks || ''
         
         formatRow(startRow)
@@ -140,6 +150,38 @@ export default defineEventHandler(async (event) => {
       })
     })
 
+    const totalsRowNum = 23
+    const totalsRow = worksheet.getRow(totalsRowNum)
+    
+    if (totalsRow) {
+      const cellA = totalsRow.getCell('A')
+      const cellC = totalsRow.getCell('C')
+      const cellG = totalsRow.getCell('G')
+      
+      if (cellA) {
+        cellA.value = 'Total'
+      }
+      
+      if (cellC) {
+        cellC.numFmt = '₱#,##0.00'
+      }
+      
+      if (cellG) {
+        cellG.numFmt = '₱#,##0.00'
+      }
+      
+      for (let col = 1; col <= 9; col++) {
+        const cell = totalsRow.getCell(col)
+        cell.font = { name: 'Calibri', size: 10 }
+        cell.alignment = { horizontal: 'left', vertical: 'middle' }
+        cell.border = {
+          left: { style: 'thin' },
+          right: { style: 'thin' },
+          top: { style: 'thin' },
+          bottom: { style: 'thin' },
+        }
+      }
+    }
 
     const excelBuffer = await workbook.xlsx.writeBuffer()
 
