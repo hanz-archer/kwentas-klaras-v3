@@ -87,32 +87,34 @@
                   'will-change-all',
                   animations.getStaggeredDelayClass(index, { maxItems: 10 }),
                 ]"
-                class="user-card bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-blue-300 transition-all duration-200"
+                class="user-card bg-white border border-gray-200 rounded-xl p-4 sm:p-5 hover:shadow-md hover:border-blue-300 transition-all duration-200"
               >
-                <div class="flex items-center gap-6">
-                  <div class="flex items-center gap-4 flex-1 min-w-0">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+                  <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                     <div class="flex-shrink-0">
-                      <div class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shadow-sm ring-2 ring-blue-50">
-                        <span class="text-blue-700 font-bold text-lg">{{ user.firstName?.charAt(0).toUpperCase() || 'U' }}</span>
+                      <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shadow-sm ring-2 ring-blue-50">
+                        <span class="text-blue-700 font-bold text-base sm:text-lg">{{ user.firstName?.charAt(0).toUpperCase() || 'U' }}</span>
                       </div>
                     </div>
                     <div class="min-w-0 flex-1">
-                      <div class="flex items-center gap-3 mb-1">
-                        <h3 class="text-lg font-bold text-gray-900 truncate">{{ user.firstName }} {{ user.lastName }}</h3>
-                        <span class="px-2 py-0.5 inline-flex text-xs font-semibold rounded-full" :class="user.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'">
+                      <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-1">
+                        <h3 class="text-base sm:text-lg font-bold text-gray-900 truncate">{{ user.firstName }} {{ user.lastName }}</h3>
+                        <span class="px-2 py-0.5 inline-flex text-xs font-semibold rounded-full self-start" :class="user.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'">
                           {{ user.status || 'N/A' }}
                         </span>
                       </div>
-                      <div class="flex items-center gap-3 flex-wrap">
+                      <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                         <p class="text-sm text-gray-600 truncate">{{ user.email || 'N/A' }}</p>
-                        <span v-if="user.department" class="inline-flex text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-                          {{ user.department }}
-                        </span>
-                            <span class="text-xs text-gray-400">{{ user.username?.startsWith('@') ? user.username.slice(1) : user.username }}</span>
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <span v-if="user.department" class="inline-flex text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                            {{ user.department }}
+                          </span>
+                          <span class="text-xs text-gray-400">{{ user.username?.startsWith('@') ? user.username.slice(1) : user.username }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div v-if="canManageUsers" class="flex items-center gap-2 flex-shrink-0">
+                  <div v-if="canManageUsers" class="flex items-center gap-2 flex-shrink-0 self-start sm:self-center">
                     <button @click.stop="handleEditClick(user)" class="p-2 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer" title="Edit user">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

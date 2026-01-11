@@ -94,8 +94,8 @@
               </div>
 
               <div v-else-if="!showLoading && filteredPayments.length > 0" class="flex-1 overflow-auto">
-                <div class="rounded-lg border border-gray-200 overflow-hidden">
-                  <table class="w-full divide-y divide-gray-200 table-auto">
+                <div class="rounded-lg border border-gray-200 overflow-hidden overflow-x-auto">
+                  <table class="w-full divide-y divide-gray-200 table-auto min-w-full">
                     <thead class="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 sticky top-0 z-10 shadow-sm">
                       <tr>
                         <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
