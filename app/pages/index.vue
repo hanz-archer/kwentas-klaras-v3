@@ -1,6 +1,6 @@
 <template>
-  <div class="w-full h-screen bg-white overflow-x-hidden">
-    <div class="container px-6 mx-auto h-full">
+  <div class="w-full min-h-screen bg-white overflow-x-hidden">
+    <div class="container px-4 sm:px-6 mx-auto min-h-screen flex flex-col">
       <div class="fixed top-4 right-4 z-50">
         <div class="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-3">
           <span class="text-xs sm:text-sm text-gray-600 whitespace-nowrap">Have an account?</span>
@@ -12,8 +12,8 @@
           </button>
         </div>
       </div>
-      <section class="bg-white h-[calc(100vh-5rem)] mt-20 flex flex-col">
-        <div class="mb-8 pt-8 pb-8 border-b border-gray-300">
+      <section class="bg-white min-h-[calc(100vh-5rem)] mt-20 flex flex-col flex-1">
+        <div class="mb-8 pt-6 pb-6 border-b border-gray-300">
           <div class="flex flex-col mb-6">
             <div>
               <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Kwentas Klaras Digital PMIS</h1>
@@ -187,139 +187,160 @@
             <p class="text-sm text-gray-500">Projects will appear here when added</p>
           </div>
 
-          <div v-else key="content" class="w-full flex-1 flex items-center relative overflow-hidden">
+          <div v-else key="content" class="w-full flex-1 relative min-h-0 overflow-hidden">
             <Transition name="fade" mode="out-in">
               <div
                 v-if="currentProject"
                 :key="currentIndex"
-                class="carousel-item w-full h-full flex items-center"
+                class="carousel-item w-full h-full"
               >
-            <div class="lg:flex lg:items-start lg:gap-12 w-full">
-              <div class="w-full space-y-8 lg:w-1/2">
-                <div>
-                  <h1 class="text-3xl font-bold text-gray-800 leading-tight mb-2">
-                      {{ currentProject.name }}
-                  </h1>
-                  <h2 class="text-2xl font-medium text-gray-600">
-                      {{ currentProject.implementingUnit }}
-                  </h2>
-                </div>
+                <div class="w-full h-full overflow-y-auto py-6">
+                  <div class="mx-auto w-full max-w-7xl">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+                      <div class="min-w-0 space-y-6">
+                        <div class="min-w-0">
+                          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
+                            {{ currentProject.name }}
+                          </h1>
+                          <h2 class="mt-2 text-lg sm:text-xl lg:text-2xl font-medium text-gray-600 break-words">
+                            {{ currentProject.implementingUnit }}
+                          </h2>
+                        </div>
 
-                <div class="flex items-center space-x-3">
-                  <span
-                    :class="[
-                      'inline-flex items-center px-6 py-3 rounded-lg text-lg font-medium',
-                        getUtilizationRateNumber(currentProject) < 20
-                        ? 'text-red-800 bg-red-100'
-                          : getUtilizationRateNumber(currentProject) < 50
-                        ? 'text-yellow-800 bg-yellow-100'
-                        : 'text-green-800 bg-green-100'
-                    ]"
-                  >
-                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
-                      <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
-                    </svg>
-                    <span class="font-semibold">
-                        <span v-if="getUtilizationRateNumber(currentProject) < 20">Budget Underutilized</span>
-                        <span v-else-if="getUtilizationRateNumber(currentProject) < 50">Above 20% Utilization Rate</span>
-                      <span v-else>Above 50% Utilization Rate</span>
-                    </span>
-                  </span>
-                </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                          <span
+                            :class="[
+                              'inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-semibold text-sm sm:text-base',
+                              utilizationRateNumber < 20
+                                ? 'text-red-800 bg-red-100'
+                                : utilizationRateNumber < 50
+                                  ? 'text-yellow-800 bg-yellow-100'
+                                  : 'text-green-800 bg-green-100'
+                            ]"
+                          >
+                            <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                              <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
+                              <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
+                            </svg>
+                            <span class="min-w-0">
+                              <span v-if="utilizationRateNumber < 20">Budget Underutilized</span>
+                              <span v-else-if="utilizationRateNumber < 50">Above 20% Utilization Rate</span>
+                              <span v-else>Above 50% Utilization Rate</span>
+                            </span>
+                          </span>
+                        </div>
 
-                <div class="grid grid-cols-2 gap-6">
-                  <div class="space-y-6">
-                    <div class="flex items-center">
-                      <div class="p-2 rounded-full bg-blue-50">
-                        <svg class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                        </svg>
-                      </div>
-                      <div class="ml-4">
-                        <span class="text-sm font-medium text-gray-500">Code</span>
-                          <p class="text-lg font-semibold text-gray-900">{{ currentProject.code || 'N/A' }}</p>
-                      </div>
-                    </div>
+                        <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
+                          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
+                            <div class="flex gap-3 min-w-0">
+                              <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                                <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                                </svg>
+                              </div>
+                              <div class="min-w-0">
+                                <dt class="text-xs font-medium text-gray-500">Code</dt>
+                                <dd class="mt-1 text-sm sm:text-base font-semibold text-gray-900 break-words">
+                                  {{ currentProject.code || 'N/A' }}
+                                </dd>
+                              </div>
+                            </div>
 
-                      <div v-if="currentProject.location" class="flex items-center">
-                      <div class="p-2 rounded-full bg-green-50">
-                        <svg class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      </div>
-                      <div class="ml-4">
-                        <span class="text-sm font-medium text-gray-500">Location</span>
-                          <p class="text-lg font-semibold text-gray-900">{{ currentProject.location }}</p>
-                      </div>
-                    </div>
+                            <div v-if="currentProject.location" class="flex gap-3 min-w-0">
+                              <div class="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center shrink-0">
+                                <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                  <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                  <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                              </div>
+                              <div class="min-w-0">
+                                <dt class="text-xs font-medium text-gray-500">Location</dt>
+                                <dd class="mt-1 text-sm sm:text-base font-semibold text-gray-900 break-words">
+                                  {{ currentProject.location }}
+                                </dd>
+                              </div>
+                            </div>
 
-                      <div v-if="currentProject.services" class="flex items-center">
-                      <div class="p-2 rounded-full bg-purple-50">
-                        <svg class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div class="ml-4">
-                        <span class="text-sm font-medium text-gray-500">Services</span>
-                          <p class="text-lg font-semibold text-gray-900">{{ currentProject.services }}</p>
-                      </div>
-                    </div>
-                  </div>
+                            <div v-if="currentProject.services" class="flex gap-3 min-w-0">
+                              <div class="h-10 w-10 rounded-full bg-purple-50 flex items-center justify-center shrink-0">
+                                <svg class="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                  <path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                              <div class="min-w-0">
+                                <dt class="text-xs font-medium text-gray-500">Services</dt>
+                                <dd class="mt-1 text-sm sm:text-base font-semibold text-gray-900 break-words">
+                                  {{ currentProject.services }}
+                                </dd>
+                              </div>
+                            </div>
 
-                  <div class="space-y-6">
-                    <div class="flex items-center">
-                      <div class="p-2 rounded-full bg-yellow-50">
-                        <svg class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div class="ml-4">
-                        <span class="text-sm font-medium text-gray-500">Budget</span>
-                          <p class="text-lg font-semibold text-gray-900">₱{{ formatNumber(currentProject.appropriation) }}</p>
-                      </div>
-                    </div>
+                            <div class="flex gap-3 min-w-0">
+                              <div class="h-10 w-10 rounded-full bg-yellow-50 flex items-center justify-center shrink-0">
+                                <svg class="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                  <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              </div>
+                              <div class="min-w-0">
+                                <dt class="text-xs font-medium text-gray-500">Budget</dt>
+                                <dd class="mt-1 text-sm sm:text-base font-semibold text-gray-900 break-words">
+                                  ₱{{ formatNumber(getTotalBudget(currentProject)) }}
+                                </dd>
+                              </div>
+                            </div>
 
-                    <div class="flex items-center">
-                      <div class="p-2 rounded-full bg-red-50">
-                        <svg class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                        </svg>
-                      </div>
-                      <div class="ml-4">
-                        <span class="text-sm font-medium text-gray-500">Balance</span>
-                          <p class="text-lg font-semibold text-gray-900">₱{{ formatNumber(currentProject.appropriation) }}</p>
-                      </div>
-                    </div>
+                            <div class="flex gap-3 min-w-0">
+                              <div class="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                                <svg class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                  <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                </svg>
+                              </div>
+                              <div class="min-w-0">
+                                <dt class="text-xs font-medium text-gray-500">Balance</dt>
+                                <dd class="mt-1 text-sm sm:text-base font-semibold text-gray-900 break-words">
+                                  ₱{{ formatNumber(getRemainingBalance(currentProject)) }}
+                                </dd>
+                              </div>
+                            </div>
 
-                      <div v-if="currentProject.remarks" class="flex items-center">
-                      <div class="p-2 rounded-full bg-indigo-50">
-                        <svg class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                        </svg>
+                            <div v-if="currentProject.remarks" class="sm:col-span-2 flex gap-3 min-w-0">
+                              <div class="h-10 w-10 rounded-full bg-indigo-50 flex items-center justify-center shrink-0">
+                                <svg class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                  <path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                </svg>
+                              </div>
+                              <div class="min-w-0">
+                                <dt class="text-xs font-medium text-gray-500">Remarks</dt>
+                                <dd class="mt-1 text-sm sm:text-base font-semibold text-gray-900 break-words whitespace-pre-line">
+                                  {{ currentProject.remarks }}
+                                </dd>
+                              </div>
+                            </div>
+                          </dl>
+                        </div>
                       </div>
-                      <div class="ml-4">
-                        <span class="text-sm font-medium text-gray-500">Remarks</span>
-                          <p class="text-lg font-semibold text-gray-900">{{ currentProject.remarks }}</p>
+
+                      <div class="w-full">
+                        <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
+                          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4">
+                            Utilization Rate:
+                            <span class="ml-1 text-gray-900 whitespace-nowrap">
+                              {{ clampPercentage(utilizationRateNumber).toFixed(1) }}%
+                            </span>
+                          </h3>
+                          <div class="mx-auto w-full max-w-[28rem] lg:max-w-[32rem] aspect-square">
+                            <PieChartSimple
+                              :title="''"
+                              :series="utilizationChartSeries"
+                              :options="utilizationChartOptions"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-
-                <div class="hidden lg:flex lg:flex-col lg:items-center lg:w-1/2 lg:justify-center mt-8 lg:mt-0">
-                  <h3 class="text-2xl font-bold text-gray-800 mb-6">Utilization Rate</h3>
-                  <div class="w-[32rem] h-[32rem]">
-                  <PieChartSimple
-                    :title="''"
-                      :series="getUtilizationChartSeries(currentProject)"
-                      :options="getUtilizationChartOptions(currentProject)"
-                  />
-                  </div>
-                </div>
-              </div>
-            </div>
             </Transition>
           </div>
         </Transition>
@@ -332,11 +353,10 @@
 import PieChartSimple from '~/components/ui/PieChartSimple.vue'
 import { useProjects } from '~/composables/project/useProjects'
 import { useProjectFormatting } from '~/composables/project/useProjectFormatting'
-import { useProjectListing } from '~/composables/project/useProjectListing'
 import { useProjectCarousel } from '~/composables/project/useProjectCarousel'
 import { useProjectFilters } from '~/composables/project/useProjectFilters'
+import { useProjectFinancials } from '~/composables/project/useProjectFinancials'
 import { useLoadingState } from '~/composables/ui/useLoadingState'
-import type { ProjectFilters } from '~/types/project/projectFilters'
 import '~/assets/css/projectCarousel.css'
 
 definePageMeta({
@@ -344,12 +364,19 @@ definePageMeta({
 })
 
 const { projects, loading, error, fetchProjects } = useProjects()
-const { formatNumber, formatDate } = useProjectFormatting()
-const { getUtilizationRate, getUtilizationChartSeries, getUtilizationChartOptions, goToProject } = useProjectListing()
+const { formatNumber } = useProjectFormatting()
 
 const { filters, filteredProjects, uniqueDepartments, uniqueYears, uniqueLocations, uniqueServices, resetFilters } = useProjectFilters(projects)
 
 const { currentIndex, currentProject, countdown, remainingProjects, startAutoPlay, stopAutoPlay } = useProjectCarousel(filteredProjects)
+
+const currentProjectId = computed<string | null>(() => currentProject.value?.id ?? null)
+const {
+  loadFinancials,
+  getTotalBudget,
+  getRemainingBalance,
+  getUtilizationRate,
+} = useProjectFinancials(currentProjectId)
 
 const { showLoading, markAsLoaded } = useLoadingState(loading)
 const showContent = ref(false)
@@ -362,6 +389,11 @@ watch(filteredProjects, (newProjects) => {
     stopAutoPlay()
   }
 })
+
+watch(currentProjectId, async (id) => {
+  if (!id) return
+  await loadFinancials()
+}, { immediate: true })
 
 const animateProgressBar = (duration: number) => {
   progressPercentage.value = 0
@@ -387,7 +419,7 @@ onMounted(async () => {
   const startTime = Date.now()
   
   const minDelay = 3000
-  const maxDelay = 5000
+  const maxDelay = 1000
   const randomDelay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay
   
   animateProgressBar(randomDelay)
@@ -413,9 +445,134 @@ onBeforeUnmount(() => {
   stopAutoPlay()
 })
 
-const getUtilizationRateNumber = (project: any): number => {
-  return parseFloat(getUtilizationRate(project))
+const utilizationRateNumber = computed<number>(() => {
+  return getUtilizationRate(currentProject.value)
+})
+
+const clampPercentage = (value: number): number => {
+  if (Number.isNaN(value)) return 0
+  return Math.max(0, Math.min(value, 100))
 }
+
+const utilizationChartSeries = computed<number[]>(() => {
+  const rate = clampPercentage(utilizationRateNumber.value)
+  return [rate, 100 - rate]
+})
+
+type PieChartOptions = Record<string, unknown>
+const utilizationChartOptions = computed<PieChartOptions>(() => {
+  const utilizationRate = clampPercentage(utilizationRateNumber.value)
+
+  return {
+    chart: {
+      type: 'donut',
+      // Use a numeric height; the container is sized via Tailwind.
+      // (Percent heights can cause ApexCharts layout issues.)
+      height: 350,
+      animations: {
+        enabled: true,
+        easing: 'cubicBezier(0.4, 0, 0.2, 1)',
+        speed: 1400,
+        animateGradually: {
+          enabled: true,
+          delay: 150,
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 550,
+        },
+      },
+      background: 'transparent',
+      fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+    },
+    labels: ['Utilized Budget', 'Remaining Budget'],
+    colors: ['#10B981', '#3B82F6'],
+    legend: {
+      show: true,
+      position: 'bottom',
+      fontSize: '18px',
+      fontWeight: 600,
+      markers: {
+        width: 14,
+        height: 14,
+        radius: 7,
+      },
+      itemMargin: {
+        horizontal: 15,
+      },
+    },
+    plotOptions: {
+      pie: {
+        expandOnClick: false,
+        donut: {
+          size: '75%',
+          labels: {
+            show: true,
+            name: {
+              show: false,
+            },
+            value: {
+              show: false,
+            },
+            total: {
+              show: true,
+              showAlways: true,
+              label: 'Utilization Rate',
+              fontSize: '24px',
+              fontWeight: 700,
+              color: '#1E293B',
+              formatter: () => `${utilizationRate.toFixed(1)}%`,
+            },
+          },
+        },
+      },
+    },
+    responsive: [
+      {
+        breakpoint: 1024,
+        options: {
+          chart: { height: 320 },
+          legend: { fontSize: '14px' },
+          plotOptions: {
+            pie: {
+              donut: {
+                labels: {
+                  total: { fontSize: '20px' },
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        breakpoint: 640,
+        options: {
+          chart: { height: 280 },
+          legend: { fontSize: '12px' },
+          plotOptions: {
+            pie: {
+              donut: {
+                labels: {
+                  total: { fontSize: '18px' },
+                },
+              },
+            },
+          },
+        },
+      },
+    ],
+    // Avoid confusing "100% remaining" slice labels when utilization is 0%
+    dataLabels: {
+      enabled: false,
+    },
+    tooltip: {
+      enabled: true,
+      y: {
+        formatter: (val: number) => `${val.toFixed(1)}%`,
+      },
+    },
+  }
+})
 
 const hasActiveFilters = computed(() => {
   return Boolean(filters.value.department || filters.value.year || filters.value.location || filters.value.services)

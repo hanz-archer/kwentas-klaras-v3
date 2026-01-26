@@ -73,7 +73,8 @@ export const useProjectFinancials = (projectId: string | Ref<string | null>) => 
    */
   const getTotalBudget = (project: Project | null): number => {
     if (!project) return 0
-    return project.appropriation + (project.totalAddedBudget || 0)
+    const appropriation = project.appropriation || 0
+    return appropriation + totalAddedBudget.value
   }
 
   /**

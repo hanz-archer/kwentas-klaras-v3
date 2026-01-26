@@ -17,7 +17,7 @@
       </div>
     </div>
   </div>
-  <div v-else>
+  <div v-else class="w-full h-full">
     <div v-if="loading" class="flex items-center justify-center py-12">
       <div class="animate-spin rounded-full h-8 w-8 border-2 border-brand-blue border-t-transparent"></div>
     </div>
@@ -36,7 +36,7 @@ import { ref, onMounted, watch, onBeforeUnmount } from 'vue'
 interface Props {
   title: string
   series: number[]
-  options: any
+  options: Record<string, unknown>
   loading?: boolean
   error?: string | null
 }
@@ -47,14 +47,22 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const chartRef = ref<HTMLElement | null>(null)
-let chart: any = null
-let ApexCharts: any = null
+type ApexChartInstance = {
+  render: () => unknown
+  destroy: () => void
+}
+
+type ApexChartsConstructor = new (el: HTMLElement, opts: Record<string, unknown>) => ApexChartInstance
+
+let chart: ApexChartInstance | null = null
+let ApexCharts: ApexChartsConstructor | null = null
 
 const renderChart = async () => {
   if (!chartRef.value || props.loading || props.error) return
 
   if (process.client && !ApexCharts) {
-    ApexCharts = (await import('apexcharts')).default
+    const module = await import('apexcharts')
+    ApexCharts = module.default as unknown as ApexChartsConstructor
   }
 
   if (!ApexCharts) return
@@ -63,11 +71,16 @@ const renderChart = async () => {
     chart.destroy()
   }
 
-  const chartOptions = {
+  const baseChartOptions = (() => {
+    const option = props.options.chart
+    return typeof option === 'object' && option !== null ? (option as Record<string, unknown>) : {}
+  })()
+
+  const chartOptions: Record<string, unknown> = {
     ...props.options,
     series: props.series,
     chart: {
-      ...props.options.chart,
+      ...baseChartOptions,
       parentHeightOffset: 0
     }
   }
