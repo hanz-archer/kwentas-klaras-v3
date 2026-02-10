@@ -21,10 +21,20 @@ export default defineEventHandler(async (event) => {
     role: body.role ? sanitizeString(body.role) : undefined,
   }
 
-  if (!sanitizedBody.firstName || !sanitizedBody.lastName || !sanitizedBody.username || !sanitizedBody.email || !sanitizedBody.department) {
+  const isStaff = (sanitizedBody.role || 'staffs').toLowerCase() === 'staffs'
+
+  if (
+    !sanitizedBody.firstName ||
+    !sanitizedBody.lastName ||
+    !sanitizedBody.username ||
+    !sanitizedBody.email ||
+    (isStaff && !sanitizedBody.department)
+  ) {
     throw createError({
       statusCode: 400,
-      message: 'Missing required fields: firstName, lastName, username, email, department'
+      message: isStaff
+        ? 'Missing required fields: firstName, lastName, username, email, department'
+        : 'Missing required fields: firstName, lastName, username, email'
     })
   }
 

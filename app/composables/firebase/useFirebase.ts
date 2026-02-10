@@ -1,5 +1,5 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app'
-import { getAuth, signInWithEmailAndPassword, signOut, type Auth, type User } from 'firebase/auth'
+import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, type Auth, type User } from 'firebase/auth'
 
 let firebaseApp: FirebaseApp | null = null
 let auth: Auth | null = null
@@ -46,6 +46,11 @@ export function useFirebase() {
     return userCredential.user
   }
 
+  const resetPassword = async (email: string): Promise<void> => {
+    const firebaseAuth = getFirebaseAuth()
+    await sendPasswordResetEmail(firebaseAuth, email)
+  }
+
   const logout = async (): Promise<void> => {
     const firebaseAuth = getFirebaseAuth()
     await signOut(firebaseAuth)
@@ -53,6 +58,7 @@ export function useFirebase() {
 
   return {
     login,
+    resetPassword,
     logout,
     auth: computed(() => getFirebaseAuth()),
   }

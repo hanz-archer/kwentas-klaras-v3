@@ -1,5 +1,6 @@
 import type { User } from '~/types/user/user'
 import { useDashboardStore } from './dashboardStore'
+import { useAuthHeaders } from '~/composables/auth/useAuthHeaders'
 
 export const useUserStore = () => {
   const users = ref<User[]>([])
@@ -36,8 +37,11 @@ export const useUserStore = () => {
     error.value = null
 
     try {
+      const headers = await useAuthHeaders()
+
       const response = await $fetch<{ success: boolean; user: User }>('/api/users/create', {
         method: 'POST',
+        headers,
         body: {
           firstName: userData.firstName,
           lastName: userData.lastName,
@@ -95,8 +99,11 @@ export const useUserStore = () => {
     error.value = null
 
     try {
+      const headers = await useAuthHeaders()
+
       const response = await $fetch<{ success: boolean }>(`/api/users/${userId}`, {
         method: 'DELETE',
+        headers,
       })
 
       if (response.success) {
