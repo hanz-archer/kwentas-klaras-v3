@@ -43,5 +43,14 @@ export class ProjectActivityRepository implements IProjectActivityRepository {
       orderBy: { createdAt: 'desc' },
     })
   }
+
+  async findAll(): Promise<ProjectActivity[]> {
+    return this.client.projectActivity.findMany({
+      where: {
+        createdAt: { not: null }
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+  }
 }
 

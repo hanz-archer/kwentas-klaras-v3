@@ -93,7 +93,7 @@ export const useDashboard = () => {
   })
 
   const handleViewAll = () => {
-    navigateTo('/admin/projects')
+    navigateTo('/admin/activities')
   }
 
   const setActivities = (activitiesData: Array<{

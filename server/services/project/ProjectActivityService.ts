@@ -23,5 +23,10 @@ export class ProjectActivityService {
     const activities = await this.repo.findByProjectId(projectId)
     return ProjectActivitySerializer.list(activities)
   }
+
+  async findAll() {
+    const activities = await this.repo.findAll()
+    return ProjectActivitySerializer.list(activities)
+  }
 }
 

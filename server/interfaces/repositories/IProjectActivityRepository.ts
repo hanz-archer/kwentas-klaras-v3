@@ -10,5 +10,6 @@ export interface IProjectActivityRepository {
   }): Promise<ProjectActivity>
   findByProjectId(projectId: string): Promise<ProjectActivity[]>
   findRecent(limit: number): Promise<ProjectActivity[]>
+  findAll(): Promise<ProjectActivity[]>
 }
 

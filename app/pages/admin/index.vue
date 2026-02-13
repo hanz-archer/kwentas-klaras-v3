@@ -196,7 +196,7 @@ const headerStats = computed(() => {
 })
 
 const handleViewAll = () => {
-  navigateTo('/admin/projects')
+  navigateTo('/admin/activities')
 }
 
 const isLoading = computed(() => {
