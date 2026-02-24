@@ -33,13 +33,14 @@ export const useProjectTimeline = (project: Ref<Project | null>, activities?: Re
     startDate.setHours(0, 0, 0, 0)
     endDate.setHours(0, 0, 0, 0)
 
-    const milestones = TIMELINE_MILESTONE_CONFIGS.map(config => ({
+    const milestones = TIMELINE_MILESTONE_CONFIGS.map((config, idx) => ({
       label: config.label,
       date: config.getDate(startDate, endDate, today),
       isPast: config.getIsPast(startDate, endDate, today),
       isCurrent: config.getIsCurrent(startDate, endDate, today),
       isLast: config.isLast,
       isActivity: false,
+      sameDayOrder: config.isLast ? 2 : 0,
     }))
 
     const allItems: TimelineItem[] = [...milestones]
@@ -71,6 +72,7 @@ export const useProjectTimeline = (project: Ref<Project | null>, activities?: Re
           isCurrent,
           isLast: false,
           isActivity: true,
+          sameDayOrder: 1,
           description: activity.description,
           action: activity.action,
           originalDate: activityDate,
@@ -83,19 +85,23 @@ export const useProjectTimeline = (project: Ref<Project | null>, activities?: Re
     const sorted = allItems.sort((a, b) => {
       const dateDiff = a.date.getTime() - b.date.getTime()
       if (dateDiff !== 0) return dateDiff
-      
+
+      const aOrder = (a as TimelineItem & { sameDayOrder?: number }).sameDayOrder ?? 1
+      const bOrder = (b as TimelineItem & { sameDayOrder?: number }).sameDayOrder ?? 1
+      if (aOrder !== bOrder) return aOrder - bOrder
+
       if (a.isActivity && b.isActivity && a.originalDate && b.originalDate) {
         const originalDateDiff = a.originalDate.getTime() - b.originalDate.getTime()
         if (originalDateDiff !== 0) return originalDateDiff
       }
-      
+
       if (a.isActivity && b.isActivity) {
-        const actionOrder: Record<string, number> = { 'created': 0, 'updated': 1 }
+        const actionOrder: Record<string, number> = { created: 0, updated: 1 }
         const aAction = a.action || ''
         const bAction = b.action || ''
         return (actionOrder[aAction] ?? 99) - (actionOrder[bAction] ?? 99)
       }
-      
+
       return 0
     })
     

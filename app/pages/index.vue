@@ -99,6 +99,19 @@
                 Clear All
               </button>
             </div>
+            <div class="relative flex-1 min-w-0 mt-3">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                v-model="filters.searchQuery"
+                type="search"
+                placeholder="Search project, code, department, location, services..."
+                class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 placeholder-gray-500 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              />
+            </div>
             <div v-if="hasActiveFilters" class="flex items-center gap-2 flex-wrap">
               <span class="text-sm text-gray-600">Active filters:</span>
               <span
@@ -140,6 +153,17 @@
               >
                 Services: {{ filters.services }}
                 <button @click="filters.services = ''" class="hover:text-blue-600">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </span>
+              <span
+                v-if="filters.searchQuery.trim()"
+                class="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-full"
+              >
+                Search: {{ filters.searchQuery }}
+                <button @click="filters.searchQuery = ''" class="hover:text-blue-600">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -575,6 +599,12 @@ const utilizationChartOptions = computed<PieChartOptions>(() => {
 })
 
 const hasActiveFilters = computed(() => {
-  return Boolean(filters.value.department || filters.value.year || filters.value.location || filters.value.services)
+  return Boolean(
+    filters.value.department ||
+      filters.value.year ||
+      filters.value.location ||
+      filters.value.services ||
+      filters.value.searchQuery.trim()
+  )
 })
 </script>

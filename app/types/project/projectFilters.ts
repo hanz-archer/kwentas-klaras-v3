@@ -3,5 +3,6 @@ export interface ProjectFilters {
   year: string
   location: string
   services: string
+  searchQuery: string
 }
 

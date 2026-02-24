@@ -68,12 +68,6 @@
                   Deleted Projects
                 </button>
               </div>
-              <div class="flex-1 sm:max-w-md sm:ml-4">
-                <SearchInput
-                  v-model="searchQuery"
-                  placeholder="Search by project name or code..."
-                />
-              </div>
               <button v-if="canManageProjects" @click="goToAddProject" class="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap">
                 Add Project
               </button>
@@ -121,6 +115,15 @@
             </div>
           </div>
 
+          <div class="flex items-center gap-3">
+            <div class="flex-1 max-w-md">
+              <SearchInput
+                v-model="searchQuery"
+                placeholder="Search project, code, department, location, services..."
+              />
+            </div>
+          </div>
+
           <section class="relative overflow-hidden rounded-2xl border border-gray-300 p-6 bg-white flex-1 min-h-[600px] flex flex-col">
 
             <ProjectsListSkeleton v-if="showLoading || (filterType === PROJECT_FILTER_TYPES.DELETED && deletedProjectsComposable.loading.value) || filteringLoading || pagination.isChangingPage.value" />
@@ -162,7 +165,7 @@
                         <span v-if="filterType === PROJECT_FILTER_TYPES.DELETED" class="px-2 py-0.5 inline-flex text-xs font-semibold rounded-full bg-red-100 text-red-700">
                           Deleted
                         </span>
-                        <span v-else-if="project.code" class="px-2 py-0.5 inline-flex text-xs font-semibold rounded-full bg-gray-100 text-gray-700 self-start">
+                        <span v-else-if="project.code" class="px-2 py-0.5 inline-flex text-xs font-semibold rounded-full bg-gray-100 text-gray-700 self-start shrink-0 whitespace-nowrap">
                           {{ project.code }}
                         </span>
                       </div>
